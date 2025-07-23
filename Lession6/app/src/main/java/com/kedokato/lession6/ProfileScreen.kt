@@ -1,8 +1,14 @@
 package com.kedokato.lession6
 
+import android.R.attr.visible
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,12 +20,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -27,46 +30,72 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.kedokato.lession6.ui.theme.Green
+import kotlinx.coroutines.delay
 
 @Composable
 fun ProfileView() {
     ProfileContent()
+
 }
 
 
 @Composable
 fun ProfileContent() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
+     var isEditMode by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
 
+    var name by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var university by remember { mutableStateOf("") }
+    var describe by remember { mutableStateOf("") }
+
+    var nameError by remember { mutableStateOf<String?>(null) }
+    var phoneError by remember { mutableStateOf<String?>(null) }
+    var universityError by remember { mutableStateOf<String?>(null) }
+
+    val showDialog = remember { mutableStateOf(false) }
+    val painter = painterResource(id = R.drawable.succes)
+
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .background(Color.White)
+            .pointerInput(Unit){
+                detectTapGestures(onTap = {
+                    focusManager.clearFocus()
+                })
+            },
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        ProfileTopBar("My Infomation", modifier = Modifier)
+        ProfileTopBar("My Infomation", modifier = Modifier, onIconClick = {isEditMode = true})
+
         Box(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
@@ -75,16 +104,41 @@ fun ProfileContent() {
         }
 
         Spacer(modifier = Modifier.size(16.dp))
-        EditContainer()
-        val showDialog = remember { mutableStateOf(false) }
-        val painter = painterResource(id = R.drawable.succes)
 
-        SubmitButton(
-            title = "Submit",
-            onClick = {
-                showDialog.value = true
-            }
+        // Truyền state xuống
+        EditContainer(
+            name = name,
+            onNameChange = { name = it },
+            phone = phone,
+            onPhoneChange = { phone = it },
+            university = university,
+            onUniversityChange = { university = it },
+            describe = describe,
+            onDescribeChange = { describe = it },
+            nameError = nameError,
+            phoneError = phoneError,
+            universityError = universityError,
+            isEnale = isEditMode
         )
+
+        if(isEditMode){
+            SubmitButton(
+                title = "Submit",
+                onClick = {
+                    nameError = if (name.isBlank() || !name.matches(Regex("^[\\p{L} ]*\$"))) "Name is invalid" else null
+                    phoneError = if (!phone.matches(Regex("^\\d{10}$"))) "Phone is invalid" else null
+                    universityError = if (university.isBlank() || !university.matches(Regex("^[\\p{L} ]*\$")) ) "University is invalid" else null
+
+                    if (nameError == null && phoneError == null && universityError == null) {
+                        showDialog.value = true
+                        isEditMode = false
+                    }
+
+                }
+            )
+        }
+
+
 
         if (showDialog.value) {
             DialogWithImage(
@@ -92,15 +146,44 @@ fun ProfileContent() {
                 painter = painter,
                 imageDescription = "Avatar Image"
             )
+
+
+            AnimatedVisibility(
+                visible = showDialog.value,
+                enter = androidx.compose.animation.fadeIn(
+                    animationSpec = tween(300)
+                ) + androidx.compose.animation.scaleIn(
+                    initialScale = 0.5f,
+                    animationSpec = tween(300)
+                ),
+                exit = fadeOut(
+                    animationSpec = tween(300)
+                ) + androidx.compose.animation.scaleOut(
+                    targetScale = 0.5f,
+                    animationSpec = tween(300)
+                )
+            ) {
+                DialogWithImage(
+                    onDismissRequest = { showDialog.value = false },
+                    painter = painter,
+                    imageDescription = "Avatar Image"
+                )
+            }
+
+            LaunchedEffect(showDialog.value) {
+                if (showDialog.value) {
+                    delay(2000)
+                    showDialog.value = false
+                }
+            }
         }
-
-
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileTopBar(title: String, modifier: Modifier = Modifier) {
+fun ProfileTopBar(title: String, modifier: Modifier = Modifier, onIconClick: () -> Unit = {}) {
     CenterAlignedTopAppBar(
         title = {
             Text(
@@ -116,7 +199,10 @@ fun ProfileTopBar(title: String, modifier: Modifier = Modifier) {
             Icon(
                 painter = painterResource(id = R.drawable.icon),
                 contentDescription = "Settings Icon",
-                modifier = Modifier.size(24.dp)
+                modifier = modifier.size(24.dp)
+                    .clickable {
+                       onIconClick()
+                    }
             )
         },
     )
@@ -129,7 +215,9 @@ fun TextArea(
     hintText: String,
     line: Int = 1,
     height: Int = 50,
-    singleLine: Boolean = true
+    singleLine: Boolean = true,
+    isError: Boolean = false,
+    isEnable: Boolean  = false
 ) {
     TextField(
         value = value,
@@ -150,6 +238,8 @@ fun TextArea(
             ),
         maxLines = line,
         singleLine = singleLine,
+        isError = isError,
+        enabled = isEnable,
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color.White,
             unfocusedContainerColor = Color.White,
@@ -172,6 +262,19 @@ fun LabelForTextField(lable: String) {
 }
 
 @Composable
+fun LabelForErrorTextField(
+    lable: String,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = lable,
+        color = MaterialTheme.colorScheme.error,
+        style = MaterialTheme.typography.bodySmall,
+        modifier = modifier.padding(top = 4.dp)
+    )
+}
+
+@Composable
 fun AvatarImage(modifier: Modifier) {
     Image(
         painter = painterResource(id = R.drawable.avatar),
@@ -182,37 +285,65 @@ fun AvatarImage(modifier: Modifier) {
 }
 
 @Composable
-fun EditContainer() {
-    Column(
-        modifier = Modifier
-            .padding(16.dp)
-    ) {
-
+fun EditContainer(
+    name: String,
+    onNameChange: (String) -> Unit,
+    phone: String,
+    onPhoneChange: (String) -> Unit,
+    university: String,
+    onUniversityChange: (String) -> Unit,
+    describe: String,
+    onDescribeChange: (String) -> Unit,
+    nameError: String? = null,
+    phoneError: String? = null,
+    universityError: String? = null,
+    isEnale: Boolean = true
+) {
+    Column(modifier = Modifier.padding(16.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 LabelForTextField("Name")
-                val nameState = remember { mutableStateOf("") }
                 TextArea(
-                    value = nameState.value,
-                    onValueChange = { nameState.value = it },
+                    value = name,
+                    onValueChange = onNameChange,
                     hintText = "Enter your name...",
                     modifier = Modifier.fillMaxWidth(),
-                    line = 1
+                    line = 1,
+                    isError = nameError != null,
+                    isEnable = isEnale
                 )
+                if (nameError != null) {
+                    Text(
+                        text = nameError,
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
             }
 
             Column(modifier = Modifier.weight(1f)) {
                 LabelForTextField("Phone")
                 TextArea(
-                    value = "",
-                    onValueChange = {},
+                    value = phone,
+                    onValueChange = onPhoneChange,
                     hintText = "Enter your phone...",
                     modifier = Modifier.fillMaxWidth(),
-                    line = 1
+                    line = 1,
+                    isError = phoneError != null,
+                    isEnable = isEnale
                 )
+                if (phoneError != null) {
+                    Text(
+                        text = phoneError,
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
             }
         }
 
@@ -220,28 +351,39 @@ fun EditContainer() {
 
         LabelForTextField("University")
         TextArea(
-            value = "",
-            onValueChange = {},
+            value = university,
+            onValueChange = onUniversityChange,
             hintText = "Enter your university...",
             modifier = Modifier.fillMaxWidth(),
-            line = 1
+            line = 1,
+            isError = universityError != null,
+            isEnable = isEnale
         )
+        if (universityError != null) {
+            Text(
+                text = universityError,
+                color = Color.Red,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.size(16.dp))
 
-        LabelForTextField("describe yourself")
+        LabelForTextField("Describe yourself")
         TextArea(
-            value = "",
-            onValueChange = {},
+            value = describe,
+            onValueChange = onDescribeChange,
             hintText = "Enter a short description about yourself...",
             modifier = Modifier.fillMaxWidth(),
             line = 5,
             height = 160,
-            singleLine = false
+            singleLine = false,
+            isEnable = isEnale
         )
-
     }
 }
+
 
 @Composable
 fun SubmitButton(title: String = "Submit", onClick: () -> Unit = {}) {
@@ -302,11 +444,10 @@ fun DialogWithImage(
                     text= subTitle,
                     style = MaterialTheme.typography.titleLarge,
                     color = Color.Black,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
                         .fillMaxWidth(),
                     textAlign = TextAlign.Center,
-
-
                 )
             }
         }
@@ -314,47 +455,8 @@ fun DialogWithImage(
 }
 
 
-
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewEditContainer() {
-//    EditContainer()
-//}
-
-//@Preview
-//@Composable
-//fun PreviewTextArea() {
-//    TextArea(modifier = Modifier, hintText = "Enter your text here")
-//}
-
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewAvatarImage() {
-//    AvatarImage(modifier = Modifier)
-//}
-//
-
-//@Preview
-//@Composable
-//fun PreviewProfileTopBar() {
-//    ProfileTopBar(title = "Profile")
-//}
-
-//@Preview
-//@Composable
-//fun PreviewSubmitButton() {
-//    DialogWithImage(
-//        onDismissRequest = {},
-//        painter = painterResource(id = R.drawable.succes),
-//        imageDescription = "Avatar Image"
-//    )
-//}
-
-
 @Preview(showBackground = true)
 @Composable
 fun PreviewProfileContent() {
     ProfileContent()
 }
-
-// chỉnh sửa giả vờ thôi để test PR
