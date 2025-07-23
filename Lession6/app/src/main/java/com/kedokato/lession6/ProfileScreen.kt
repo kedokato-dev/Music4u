@@ -33,6 +33,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -59,14 +60,13 @@ fun ProfileView() {
 fun ProfileContent() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .background(Color.White)
     ) {
         ProfileTopBar("My Infomation", modifier = Modifier)
-//        ProfileAppBarCustom(title = "My Infomation", modifier = Modifier)
         Box(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
@@ -107,11 +107,11 @@ fun ProfileTopBar(title: String, modifier: Modifier = Modifier) {
                 text = title, color = Color.Black,
             )
         },
-        modifier = modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         colors = topAppBarColors(
             containerColor = Color(0x006200EE),
             titleContentColor = Color.White
         ),
+        expandedHeight = TopAppBarDefaults.LargeAppBarCollapsedHeight,
         actions = {
             Icon(
                 painter = painterResource(id = R.drawable.icon),
@@ -121,42 +121,6 @@ fun ProfileTopBar(title: String, modifier: Modifier = Modifier) {
         },
     )
 }
-
-@Composable
-fun ProfileAppBarCustom(
-    title: String,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        tonalElevation = 4.dp,
-        color = MaterialTheme.colorScheme.onSecondary,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp) // nhỏ hơn mặc định
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = { /* back */ }) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.Black)
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("My Infomation", color = Color.Black)
-        }
-    }
-
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ProfileAppBarPreview() {
-    ProfileAppBarCustom(title = "Profile")
-}
-
-
 @Composable
 fun TextArea(
     value: String ,
@@ -230,10 +194,10 @@ fun EditContainer() {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 LabelForTextField("Name")
+                val nameState = remember { mutableStateOf("") }
                 TextArea(
-                    value = "",
-                    onValueChange = {
-                    },
+                    value = nameState.value,
+                    onValueChange = { nameState.value = it },
                     hintText = "Enter your name...",
                     modifier = Modifier.fillMaxWidth(),
                     line = 1
@@ -369,11 +333,12 @@ fun DialogWithImage(
 //    AvatarImage(modifier = Modifier)
 //}
 //
-@Preview
-@Composable
-fun PreviewProfileTopBar() {
-    ProfileTopBar(title = "Profile")
-}
+
+//@Preview
+//@Composable
+//fun PreviewProfileTopBar() {
+//    ProfileTopBar(title = "Profile")
+//}
 
 //@Preview
 //@Composable
@@ -386,10 +351,10 @@ fun PreviewProfileTopBar() {
 //}
 
 
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewProfileContent() {
-//    ProfileContent()
-//}
+@Preview(showBackground = true)
+@Composable
+fun PreviewProfileContent() {
+    ProfileContent()
+}
 
 // chỉnh sửa giả vờ thôi để test PR
