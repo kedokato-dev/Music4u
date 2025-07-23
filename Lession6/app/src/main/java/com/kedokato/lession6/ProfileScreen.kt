@@ -65,8 +65,8 @@ fun ProfileContent() {
             .verticalScroll(rememberScrollState())
             .background(Color.White)
     ) {
-//        ProfileTopBar("My Infomation", modifier = Modifier)
-        ProfileAppBarCustom(title = "My Infomation", modifier = Modifier)
+        ProfileTopBar("My Infomation", modifier = Modifier)
+//        ProfileAppBarCustom(title = "My Infomation", modifier = Modifier)
         Box(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
@@ -391,3 +391,5 @@ fun PreviewProfileTopBar() {
 //fun PreviewProfileContent() {
 //    ProfileContent()
 //}
+
+// chỉnh sửa giả vờ thôi để test PR
