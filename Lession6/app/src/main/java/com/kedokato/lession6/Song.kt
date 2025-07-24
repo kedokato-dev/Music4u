@@ -1,8 +1,8 @@
 package com.kedokato.lession6
 
-import kotlin.time.Duration
 
 data class Song(
+    val id: Int,
     val name: String,
     val artist: String,
     val duration : String,

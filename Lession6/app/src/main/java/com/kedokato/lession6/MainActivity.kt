@@ -31,13 +31,20 @@ class MainActivity : ComponentActivity() {
             false
         setContent {
             var typeDisplayState by rememberSaveable { mutableStateOf(true) }
+            var isSort by rememberSaveable { mutableStateOf(false) }
             Lession6Theme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     topBar = {
                         PlayListTopBar(
                             typeDisplay = typeDisplayState,
-                            onToggleDisplay = { typeDisplayState = !typeDisplayState })
+                            onToggleDisplay = { typeDisplayState = !typeDisplayState },
+                            isSort = isSort,
+                            onSort = { isSort = !isSort },
+                            onCancelSort = {isSort = !isSort},
+                        )
+
+
                     }
                 ) { innerPadding ->
                     Surface(
@@ -46,7 +53,7 @@ class MainActivity : ComponentActivity() {
                             .padding(top = innerPadding.calculateTopPadding())
                             .background(Color.White),
                     ) {
-                        PlayListScreen(typeDisplayState)
+                        PlayListScreen(typeDisplayState, isSort)
                     }
                 }
             }
