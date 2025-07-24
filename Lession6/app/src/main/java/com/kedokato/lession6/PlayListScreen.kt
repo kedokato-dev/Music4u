@@ -1,5 +1,6 @@
 package com.kedokato.lession6
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -35,26 +37,45 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.burnoutcrew.reorderable.ReorderableItem
+import org.burnoutcrew.reorderable.ReorderableLazyListState
+import org.burnoutcrew.reorderable.detectReorder
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
+import org.burnoutcrew.reorderable.reorderable
 
 /*
 * Tran Anh Quan - Techtreck Session 3
 * Lesson 9 - List Layout
 * */
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun PlayListScreen(typeDisplay: Boolean) {
+fun PlayListScreen(typeDisplay: Boolean, isSort: Boolean = false) {
+    var songs by remember { mutableStateOf(listSong.toMutableList()) }
+
+    val reorderState = rememberReorderableLazyListState(
+        onMove = { from, to ->
+            songs = songs.toMutableList().apply {
+                add(to.index, removeAt(from.index))
+            }
+        },
+
+    )
+
     if (typeDisplay) {
         LazyColumn(
+            state = reorderState.listState,
             modifier = Modifier
                 .background(Color.Black)
                 .padding(top = 16.dp)
                 .padding(horizontal = 8.dp)
-
+                .reorderable(reorderState)
         ) {
-            items(listSong.size) { index ->
-                val song = listSong[index]
-                PlayListItem(song)
+            items(songs.size) { index ->
+                val song = songs[index]
+                ReorderableItem(reorderState, key = song.id) { isDragging ->
+                    PlayListItem(song, reorderState, isSort, modifier = Modifier.animateItemPlacement())
+                }
             }
         }
     } else {
@@ -75,7 +96,13 @@ fun PlayListScreen(typeDisplay: Boolean) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlayListTopBar(typeDisplay: Boolean, onToggleDisplay: () -> Unit) {
+fun PlayListTopBar(
+    typeDisplay: Boolean,
+    onToggleDisplay: () -> Unit,
+    isSort: Boolean,
+    onSort: () -> Unit,
+    onCancelSort: () -> Unit // new callback
+) {
     CenterAlignedTopAppBar(
         title = { Text(text = "My Playlist", style = MaterialTheme.typography.headlineSmall) },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -85,48 +112,59 @@ fun PlayListTopBar(typeDisplay: Boolean, onToggleDisplay: () -> Unit) {
             navigationIconContentColor = Color.White,
             scrolledContainerColor = Color.Black,
         ),
-        actions = {
-            if (typeDisplay) {
+        navigationIcon = {
+            if (isSort) {
                 Icon(
-                    painter = painterResource(R.drawable.grid),
-                    contentDescription = "Grid Icon",
+                    painter = painterResource(R.drawable.cancel),
+                    contentDescription = "Close Sort",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .size(24.dp)
+                        .clickable { onCancelSort() }
+                )
+            }
+        },
+        actions = {
+            if (isSort) {
+                Icon(
+                    painter = painterResource(R.drawable.tick),
+                    contentDescription = "Sort Icon",
                     tint = Color.White,
                     modifier = Modifier
                         .padding(horizontal = 8.dp)
                         .size(24.dp)
-                        .clickable {
-                            onToggleDisplay()
-                        }
+                        .clickable { onSort() }
                 )
             } else {
                 Icon(
-                    painter = painterResource(R.drawable.list),
-                    contentDescription = "Grid Icon",
+                    painter = painterResource(
+                        if (typeDisplay) R.drawable.grid else R.drawable.list
+                    ),
+                    contentDescription = "Grid/List Icon",
                     tint = Color.White,
                     modifier = Modifier
                         .padding(horizontal = 8.dp)
                         .size(24.dp)
-                        .clickable {
-                            onToggleDisplay()
-                        }
+                        .clickable { onToggleDisplay() }
+                )
+                Icon(
+                    painter = painterResource(R.drawable.sort),
+                    contentDescription = "Sort Icon",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .size(24.dp)
+                        .clickable { onSort() }
                 )
             }
-
-            Icon(
-                painter = painterResource(R.drawable.sort),
-                contentDescription = "Search Icon",
-                tint = Color.White,
-                modifier = Modifier
-                    .padding(horizontal = 8.dp)
-                    .size(24.dp)
-            )
         },
     )
 }
 
 
 @Composable
-fun PlayListItem(song: Song) {
+fun PlayListItem(song: Song, reorderState: ReorderableLazyListState, isSort: Boolean, modifier: Modifier = Modifier) {
     var expanded by remember { mutableStateOf(false) }
     Row(
         modifier = Modifier.fillMaxWidth()
@@ -180,6 +218,18 @@ fun PlayListItem(song: Song) {
             onDismiss = { expanded = false },
             song = song
         )
+
+        if (isSort){
+            Image(
+                painter = painterResource(id = R.drawable.drag),
+                contentDescription = "Drag Handle",
+                modifier = Modifier
+                    .size(24.dp)
+                    .align(Alignment.CenterVertically)
+                    .detectReorder(reorderState)
+                    .padding(end = 8.dp)
+            )
+        }
     }
 
 }
@@ -274,13 +324,13 @@ fun Menu(expanded: Boolean, onDismiss: () -> Unit, song: Song) {
             leadingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.share),
-                    contentDescription = "Delete Icon",
+                    contentDescription = "Share Icon",
                     tint = Color.White
                 )
             },
             onClick = {
                 onDismiss()
-                // Handle share action here
+
             }
         )
     }
@@ -290,28 +340,35 @@ fun Menu(expanded: Boolean, onDismiss: () -> Unit, song: Song) {
 @Preview
 @Composable
 fun PlayListScreenPreview() {
-    PlayListScreen(typeDisplay = false)
+    PlayListScreen(typeDisplay = true, isSort = true)
+}
+
+@Preview
+@Composable
+fun PlayListTopBarPreview() {
+    PlayListTopBar(typeDisplay = false, onToggleDisplay = {}, isSort = true, onSort = {},
+        onCancelSort = {})
 }
 
 val listSong = mutableStateListOf<Song>(
-    Song("Grainy days", "moody", "4:30", R.drawable.img1),
-    Song("Coffee", "Kainbeats", "3:45", R.drawable.img2),
-    Song("raindrops", "Rainyxxy", "2:50", R.drawable.img3),
-    Song("Tokyo", "SmYang", "5:15", R.drawable.img4),
-    Song("Lullaby", "iamfinenow", "3:20", R.drawable.img5),
-    Song("Midnight", "Kainbeats", "4:10", R.drawable.img1),
-    Song("Sunset", "moody", "3:55", R.drawable.img2),
-    Song("Dreamscape", "Rainyxxy", "4:05", R.drawable.img3),
-    Song("Whispers", "SmYang", "3:30", R.drawable.img4),
-    Song("Echoes", "iamfinenow", "4:25", R.drawable.img5),
-    Song("Shape of you", "moody", "4:30", R.drawable.img_extra),
-    Song("Coffee", "Kainbeats", "3:45", R.drawable.img1),
-    Song("raindrops", "Rainyxxy", "2:50", R.drawable.img2),
-    Song("Tokyo", "SmYang", "5:15", R.drawable.img3),
-    Song("Lullaby", "iamfinenow", "3:20", R.drawable.img4),
-    Song("Midnight", "Kainbeats", "4:10", R.drawable.img5),
-    Song("Sunset", "moody", "3:55", R.drawable.img2),
-    Song("Dreamscape", "Rainyxxy", "4:05", R.drawable.img1),
-    Song("Whispers", "SmYang", "3:30", R.drawable.img5),
-    Song("Echoes", "iamfinenow", "4:25", R.drawable.img_extra),
+    Song(1, "Grainy days", "moody", "4:30", R.drawable.img1),
+    Song(2, "Coffee", "Kainbeats", "3:45", R.drawable.img2),
+    Song(3, "raindrops", "Rainyxxy", "2:50", R.drawable.img3),
+    Song(4, "Tokyo", "SmYang", "5:15", R.drawable.img4),
+    Song(5, "Lullaby", "iamfinenow", "3:20", R.drawable.img5),
+    Song(6, "Midnight", "Kainbeats", "4:10", R.drawable.img1),
+    Song(7, "Sunset", "moody", "3:55", R.drawable.img2),
+    Song(8, "Dreamscape", "Rainyxxy", "4:05", R.drawable.img3),
+    Song(9, "Whispers", "SmYang", "3:30", R.drawable.img4),
+    Song(10, "Echoes", "iamfinenow", "4:25", R.drawable.img5),
+    Song(11, "Shape of you", "moody", "4:30", R.drawable.img_extra),
+    Song(12, "Coffee", "Kainbeats", "3:45", R.drawable.img1),
+    Song(13, "raindrops", "Rainyxxy", "2:50", R.drawable.img2),
+    Song(14, "Tokyo", "SmYang", "5:15", R.drawable.img3),
+    Song(15, "Lullaby", "iamfinenow", "3:20", R.drawable.img4),
+    Song(16, "Midnight", "Kainbeats", "4:10", R.drawable.img5),
+    Song(17, "Sunset", "moody", "3:55", R.drawable.img2),
+    Song(18, "Dreamscape", "Rainyxxy", "4:05", R.drawable.img1),
+    Song(19, "Whispers", "SmYang", "3:30", R.drawable.img5),
+    Song(20, "Echoes", "iamfinenow", "4:25", R.drawable.img_extra),
 )
