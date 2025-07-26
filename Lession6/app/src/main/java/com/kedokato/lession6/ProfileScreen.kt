@@ -1,6 +1,6 @@
 package com.kedokato.lession6
 
-import android.R.attr.visible
+import android.R.color.white
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
@@ -28,6 +28,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,7 +36,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -44,8 +44,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Green
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -55,20 +55,34 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.kedokato.lession6.ui.theme.Green
+import com.example.compose.ColorFamily
+import com.example.compose.getCurrentColorScheme
 import kotlinx.coroutines.delay
 
 @Composable
-fun ProfileView() {
-    ProfileContent()
-
+fun ProfileView(
+    isEditMode: Boolean = false,
+    onEditModeChange: (Boolean) -> Unit = {},
+    isDarkTheme: Boolean = false,
+    modifier: Modifier
+) {
+    ProfileContent(
+        isEditMode = isEditMode,
+        onEditModeChange = onEditModeChange,
+        isDarkTheme = isDarkTheme,
+        modifier
+    )
 }
 
-
 @Composable
-fun ProfileContent() {
-     var isEditMode by remember { mutableStateOf(false) }
+fun ProfileContent(
+    isEditMode: Boolean = false,
+    onEditModeChange: (Boolean) -> Unit = {},
+    isDarkTheme: Boolean = false,
+    modifier: Modifier
+) {
     val focusManager = LocalFocusManager.current
+    val colorScheme = getCurrentColorScheme(isDarkTheme)
 
     var name by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
@@ -83,29 +97,26 @@ fun ProfileContent() {
     val painter = painterResource(id = R.drawable.succes)
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .background(Color.White)
-            .pointerInput(Unit){
+            .background(colorScheme.background)
+            .pointerInput(Unit) {
                 detectTapGestures(onTap = {
                     focusManager.clearFocus()
                 })
             },
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        ProfileTopBar("My Infomation", modifier = Modifier, onIconClick = {isEditMode = true})
-
         Box(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
-            AvatarImage(modifier = Modifier)
+            AvatarImage(modifier = modifier, colorScheme)
         }
 
-        Spacer(modifier = Modifier.size(16.dp))
+        Spacer(modifier = modifier.size(16.dp))
 
-        // Truyền state xuống
         EditContainer(
             name = name,
             onNameChange = { name = it },
@@ -118,35 +129,37 @@ fun ProfileContent() {
             nameError = nameError,
             phoneError = phoneError,
             universityError = universityError,
-            isEnale = isEditMode
+            isEnale = isEditMode,
+            colorScheme = colorScheme
         )
 
-        if(isEditMode){
+        if (isEditMode) {
             SubmitButton(
                 title = "Submit",
                 onClick = {
-                    nameError = if (name.isBlank() || !name.matches(Regex("^[\\p{L} ]*\$"))) "Name is invalid" else null
-                    phoneError = if (!phone.matches(Regex("^\\d{10}$"))) "Phone is invalid" else null
-                    universityError = if (university.isBlank() || !university.matches(Regex("^[\\p{L} ]*\$")) ) "University is invalid" else null
+                    nameError =
+                        if (name.isBlank() || !name.matches(Regex("^[\\p{L} ]*\$"))) "Name is invalid" else null
+                    phoneError =
+                        if (!phone.matches(Regex("^\\d{10}$"))) "Phone is invalid" else null
+                    universityError =
+                        if (university.isBlank() || !university.matches(Regex("^[\\p{L} ]*\$"))) "University is invalid" else null
 
                     if (nameError == null && phoneError == null && universityError == null) {
                         showDialog.value = true
-                        isEditMode = false
+                        onEditModeChange(false)
                     }
-
-                }
+                },
+                colorScheme = colorScheme
             )
         }
-
-
 
         if (showDialog.value) {
             DialogWithImage(
                 onDismissRequest = { showDialog.value = false },
                 painter = painter,
-                imageDescription = "Avatar Image"
+                imageDescription = "Avatar Image",
+                colorScheme = colorScheme,
             )
-
 
             AnimatedVisibility(
                 visible = showDialog.value,
@@ -180,36 +193,62 @@ fun ProfileContent() {
     }
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileTopBar(title: String, modifier: Modifier = Modifier, onIconClick: () -> Unit = {}) {
+fun ProfileTopBar(
+    title: String,
+    modifier: Modifier,
+    isEdit: Boolean,
+    onIconClick: () -> Unit = {},
+    onThemeToggle: () -> Unit = {},
+    isDarkTheme: Boolean = false,
+) {
+    val colorScheme = getCurrentColorScheme(isDarkTheme)
     CenterAlignedTopAppBar(
         title = {
             Text(
-                text = title, color = Color.Black,
+                text = title,
+                color = colorScheme.primary,
             )
         },
-        colors = topAppBarColors(
-            containerColor = Color(0x006200EE),
-            titleContentColor = Color.White
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = colorScheme.background,
+            titleContentColor = colorScheme.primary,
+            actionIconContentColor = colorScheme.primary,
+            navigationIconContentColor = colorScheme.primary,
+            scrolledContainerColor = colorScheme.background,
         ),
-        expandedHeight = TopAppBarDefaults.LargeAppBarCollapsedHeight,
+        expandedHeight = TopAppBarDefaults.TopAppBarExpandedHeight,
         actions = {
             Icon(
                 painter = painterResource(id = R.drawable.icon),
                 contentDescription = "Settings Icon",
-                modifier = modifier.size(24.dp)
+                modifier = modifier
+                    .size(24.dp)
                     .clickable {
-                       onIconClick()
+                        onIconClick()
                     }
             )
         },
+        navigationIcon = {
+            Icon(
+                painter = painterResource(R.drawable.dark_mode_1),
+                contentDescription = "Toggle Theme",
+                tint = colorScheme.primary,
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .size(24.dp)
+                    .clickable {
+                        onThemeToggle()
+                    }
+            )
+        }
     )
 }
+
 @Composable
 fun TextArea(
-    value: String ,
+    value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     hintText: String,
@@ -217,7 +256,8 @@ fun TextArea(
     height: Int = 50,
     singleLine: Boolean = true,
     isError: Boolean = false,
-    isEnable: Boolean  = false
+    isEnable: Boolean = false,
+    colorScheme: ColorScheme
 ) {
     TextField(
         value = value,
@@ -225,7 +265,7 @@ fun TextArea(
         placeholder = {
             Text(
                 text = hintText,
-                color = Color.Gray,
+                color = colorScheme.onSurfaceVariant,
             )
         },
         modifier = modifier
@@ -233,7 +273,7 @@ fun TextArea(
             .heightIn(min = height.dp)
             .border(
                 width = 1.dp,
-                color = Color.Gray,
+                color = colorScheme.outline,
                 shape = RoundedCornerShape(8.dp)
             ),
         maxLines = line,
@@ -241,46 +281,46 @@ fun TextArea(
         isError = isError,
         enabled = isEnable,
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White,
-            disabledContainerColor = Color.White,
-            errorContainerColor = Color.White,
+            focusedContainerColor = colorScheme.onSecondary,
+            unfocusedContainerColor = colorScheme.onSecondary,
+            disabledContainerColor = colorScheme.onSecondary,
+            errorContainerColor = colorScheme.surface,
             focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
+            unfocusedIndicatorColor = Color.Transparent,
+            focusedTextColor = colorScheme.primary,
+            unfocusedTextColor = colorScheme.primary,
+            disabledTextColor = colorScheme.primary,
         )
     )
 }
 
-
 @Composable
-fun LabelForTextField(lable: String) {
+fun LabelForTextField(
+    lable: String,
+    colorScheme: ColorScheme
+) {
     Text(
         text = lable,
-        color = Color.Black,
+        color = colorScheme.primary,
         modifier = Modifier.padding(bottom = 4.dp)
     )
 }
 
 @Composable
-fun LabelForErrorTextField(
-    lable: String,
-    modifier: Modifier = Modifier
+fun AvatarImage(
+    modifier: Modifier,
+    colorScheme: ColorScheme
 ) {
-    Text(
-        text = lable,
-        color = MaterialTheme.colorScheme.error,
-        style = MaterialTheme.typography.bodySmall,
-        modifier = modifier.padding(top = 4.dp)
-    )
-}
-
-@Composable
-fun AvatarImage(modifier: Modifier) {
     Image(
         painter = painterResource(id = R.drawable.avatar),
         contentDescription = "Avatar Image",
         modifier = modifier
             .size(150.dp)
+            .border(
+                width = 2.dp,
+                color = colorScheme.primary,
+                shape = RoundedCornerShape(75.dp)
+            )
     )
 }
 
@@ -297,7 +337,8 @@ fun EditContainer(
     nameError: String? = null,
     phoneError: String? = null,
     universityError: String? = null,
-    isEnale: Boolean = true
+    isEnale: Boolean = true,
+    colorScheme: ColorScheme
 ) {
     Column(modifier = Modifier.padding(16.dp)) {
         Row(
@@ -305,7 +346,7 @@ fun EditContainer(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                LabelForTextField("Name")
+                LabelForTextField("Name", colorScheme = colorScheme)
                 TextArea(
                     value = name,
                     onValueChange = onNameChange,
@@ -313,12 +354,13 @@ fun EditContainer(
                     modifier = Modifier.fillMaxWidth(),
                     line = 1,
                     isError = nameError != null,
-                    isEnable = isEnale
+                    isEnable = isEnale,
+                    colorScheme = colorScheme
                 )
                 if (nameError != null) {
                     Text(
                         text = nameError,
-                        color = Color.Red,
+                        color = colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(top = 4.dp)
                     )
@@ -326,7 +368,7 @@ fun EditContainer(
             }
 
             Column(modifier = Modifier.weight(1f)) {
-                LabelForTextField("Phone")
+                LabelForTextField("Phone", colorScheme = colorScheme)
                 TextArea(
                     value = phone,
                     onValueChange = onPhoneChange,
@@ -334,12 +376,13 @@ fun EditContainer(
                     modifier = Modifier.fillMaxWidth(),
                     line = 1,
                     isError = phoneError != null,
-                    isEnable = isEnale
+                    isEnable = isEnale,
+                    colorScheme = colorScheme
                 )
                 if (phoneError != null) {
                     Text(
                         text = phoneError,
-                        color = Color.Red,
+                        color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(top = 4.dp)
                     )
@@ -349,7 +392,7 @@ fun EditContainer(
 
         Spacer(modifier = Modifier.size(16.dp))
 
-        LabelForTextField("University")
+        LabelForTextField("University", colorScheme = colorScheme)
         TextArea(
             value = university,
             onValueChange = onUniversityChange,
@@ -357,12 +400,13 @@ fun EditContainer(
             modifier = Modifier.fillMaxWidth(),
             line = 1,
             isError = universityError != null,
-            isEnable = isEnale
+            isEnable = isEnale,
+            colorScheme = colorScheme
         )
         if (universityError != null) {
             Text(
                 text = universityError,
-                color = Color.Red,
+                color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(top = 4.dp)
             )
@@ -370,7 +414,7 @@ fun EditContainer(
 
         Spacer(modifier = Modifier.size(16.dp))
 
-        LabelForTextField("Describe yourself")
+        LabelForTextField("Describe yourself", colorScheme = colorScheme)
         TextArea(
             value = describe,
             onValueChange = onDescribeChange,
@@ -379,19 +423,19 @@ fun EditContainer(
             line = 5,
             height = 160,
             singleLine = false,
-            isEnable = isEnale
+            isEnable = isEnale,
+            colorScheme = colorScheme
         )
     }
 }
 
-
 @Composable
-fun SubmitButton(title: String = "Submit", onClick: () -> Unit = {}) {
+fun SubmitButton(title: String = "Submit", onClick: () -> Unit = {}, colorScheme: ColorScheme) {
     Button(
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color.Black,
-            contentColor = Color.White
+            containerColor = colorScheme.surfaceTint,
+            contentColor = colorScheme.onSecondary
         ),
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier
@@ -407,7 +451,8 @@ fun DialogWithImage(
     painter: Painter,
     imageDescription: String,
     title: String = "Success!",
-    subTitle: String = "Your information has been updated!"
+    subTitle: String = "Your information has been updated!",
+    colorScheme: ColorScheme = MaterialTheme.colorScheme
 ) {
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
@@ -416,7 +461,7 @@ fun DialogWithImage(
                 .height(375.dp)
                 .padding(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = Color.White
+                containerColor = colorScheme.surface
             ),
             shape = RoundedCornerShape(16.dp),
         ) {
@@ -441,9 +486,9 @@ fun DialogWithImage(
                 )
 
                 Text(
-                    text= subTitle,
+                    text = subTitle,
                     style = MaterialTheme.typography.titleLarge,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                         .fillMaxWidth(),
@@ -454,9 +499,13 @@ fun DialogWithImage(
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
 fun PreviewProfileContent() {
-    ProfileContent()
+    ProfileContent(
+        isEditMode = true,
+        onEditModeChange = {},
+        isDarkTheme = false,
+        modifier = Modifier.fillMaxSize()
+    )
 }
