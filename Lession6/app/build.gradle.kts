@@ -41,6 +41,9 @@ android {
 
 dependencies {
 
+    implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
+
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

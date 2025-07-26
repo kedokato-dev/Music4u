@@ -1,0 +1,374 @@
+package com.kedokato.lession6
+
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import org.burnoutcrew.reorderable.ReorderableItem
+import org.burnoutcrew.reorderable.ReorderableLazyListState
+import org.burnoutcrew.reorderable.detectReorder
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
+import org.burnoutcrew.reorderable.reorderable
+
+/*
+* Tran Anh Quan - Techtreck Session 3
+* Lesson 9 - List Layout
+* */
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@Composable
+fun PlayListScreen(typeDisplay: Boolean, isSort: Boolean = false) {
+    var songs by remember { mutableStateOf(listSong.toMutableList()) }
+
+    val reorderState = rememberReorderableLazyListState(
+        onMove = { from, to ->
+            songs = songs.toMutableList().apply {
+                add(to.index, removeAt(from.index))
+            }
+        },
+
+    )
+
+    if (typeDisplay) {
+        LazyColumn(
+            state = reorderState.listState,
+            modifier = Modifier
+                .background(Color.Black)
+                .padding(top = 16.dp)
+                .padding(horizontal = 8.dp)
+                .reorderable(reorderState)
+        ) {
+            items(songs.size) { index ->
+                val song = songs[index]
+                ReorderableItem(reorderState, key = song.id) { isDragging ->
+                    PlayListItem(song, reorderState, isSort, modifier = Modifier.animateItemPlacement())
+                }
+            }
+        }
+    } else {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier
+                .background(Color.Black)
+                .padding(top = 16.dp)
+                .padding(horizontal = 8.dp)
+        ) {
+            items(listSong.size) { index ->
+                val song = listSong[index]
+                PlayGridItem(song)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PlayListTopBar(
+    typeDisplay: Boolean,
+    onToggleDisplay: () -> Unit,
+    isSort: Boolean,
+    onSort: () -> Unit,
+    onCancelSort: () -> Unit // new callback
+) {
+    CenterAlignedTopAppBar(
+        title = { Text(text = "My Playlist", style = MaterialTheme.typography.headlineSmall) },
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = Color.Black,
+            titleContentColor = Color.White,
+            actionIconContentColor = Color.White,
+            navigationIconContentColor = Color.White,
+            scrolledContainerColor = Color.Black,
+        ),
+        navigationIcon = {
+            if (isSort) {
+                Icon(
+                    painter = painterResource(R.drawable.cancel),
+                    contentDescription = "Close Sort",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .size(24.dp)
+                        .clickable { onCancelSort() }
+                )
+            }
+        },
+        actions = {
+            if (isSort) {
+                Icon(
+                    painter = painterResource(R.drawable.tick),
+                    contentDescription = "Sort Icon",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .size(24.dp)
+                        .clickable { onSort() }
+                )
+            } else {
+                Icon(
+                    painter = painterResource(
+                        if (typeDisplay) R.drawable.grid else R.drawable.list
+                    ),
+                    contentDescription = "Grid/List Icon",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .size(24.dp)
+                        .clickable { onToggleDisplay() }
+                )
+                Icon(
+                    painter = painterResource(R.drawable.sort),
+                    contentDescription = "Sort Icon",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .size(24.dp)
+                        .clickable { onSort() }
+                )
+            }
+        },
+    )
+}
+
+
+@Composable
+fun PlayListItem(song: Song, reorderState: ReorderableLazyListState, isSort: Boolean, modifier: Modifier = Modifier) {
+    var expanded by remember { mutableStateOf(false) }
+    Row(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Image(
+            painter = painterResource(id = song.image),
+            contentDescription = "Song Image",
+            modifier = Modifier
+                .size(64.dp)
+                .padding(8.dp)
+        )
+        Column {
+            Text(
+                text = song.name,
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+            Text(
+                text = song.artist,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+        }
+        Text(
+            text = song.duration,
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.White,
+            modifier = Modifier
+                .padding(8.dp)
+                .weight(1f)
+                .align(Alignment.CenterVertically),
+            textAlign = TextAlign.End
+        )
+        Image(
+            painter = painterResource(id = R.drawable.dotx3),
+            contentDescription = "More Options",
+            modifier = Modifier
+                .padding(8.dp)
+                .size(24.dp)
+                .align(Alignment.CenterVertically)
+                .clickable {
+                    expanded = true
+                },
+            colorFilter = ColorFilter.tint(Color.White)
+        )
+
+        Menu(
+            expanded = expanded,
+            onDismiss = { expanded = false },
+            song = song
+        )
+
+        if (isSort){
+            Image(
+                painter = painterResource(id = R.drawable.drag),
+                contentDescription = "Drag Handle",
+                modifier = Modifier
+                    .size(24.dp)
+                    .align(Alignment.CenterVertically)
+                    .detectReorder(reorderState)
+                    .padding(end = 8.dp)
+            )
+        }
+    }
+
+}
+
+@Composable
+fun PlayGridItem(song: Song) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        var expanded by remember { mutableStateOf(false) }
+        Box {
+            Image(
+                painter = painterResource(id = song.image),
+                contentDescription = "Song Image",
+                modifier = Modifier
+                    .size(150.dp)
+                    .padding(8.dp)
+                    .background(Color.Gray, shape = RoundedCornerShape(8.dp))
+            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(14.dp)
+                    .background(Color.Black.copy(alpha = 0.5f), shape = RoundedCornerShape(6.dp))
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.dotx3),
+                    contentDescription = "Dot x3 Icon",
+                    modifier = Modifier
+                        .size(24.dp)
+                        .padding(4.dp)
+                        .clickable { expanded = true },
+                    colorFilter = ColorFilter.tint(Color.White)
+                )
+            }
+
+            Menu(
+                expanded = expanded,
+                onDismiss = { expanded = false },
+                song = song
+            )
+        }
+
+        Text(
+            text = song.name,
+            style = MaterialTheme.typography.bodyLarge,
+            color = Color.White,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+        Text(
+            text = song.artist,
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+
+        Text(
+            text = song.duration,
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.White,
+            modifier = Modifier.padding(horizontal = 8.dp),
+        )
+    }
+
+}
+
+@Composable
+fun Menu(expanded: Boolean, onDismiss: () -> Unit, song: Song) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = { onDismiss() },
+        modifier = Modifier
+            .background(Color.DarkGray)
+            .padding(8.dp),
+    ) {
+        DropdownMenuItem(
+            text = { Text("Remove from playlist", color = Color.White) },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.remove),
+                    contentDescription = "Delete Icon",
+                    tint = Color.White
+                )
+            },
+            onClick = {
+                onDismiss()
+                listSong.remove(song)
+            }
+        )
+        DropdownMenuItem(
+            text = { Text("Share (coming soon)", color = Color.Gray) },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.share),
+                    contentDescription = "Share Icon",
+                    tint = Color.White
+                )
+            },
+            onClick = {
+                onDismiss()
+
+            }
+        )
+    }
+}
+
+
+@Preview
+@Composable
+fun PlayListScreenPreview() {
+    PlayListScreen(typeDisplay = true, isSort = true)
+}
+
+@Preview
+@Composable
+fun PlayListTopBarPreview() {
+    PlayListTopBar(typeDisplay = false, onToggleDisplay = {}, isSort = true, onSort = {},
+        onCancelSort = {})
+}
+
+val listSong = mutableStateListOf<Song>(
+    Song(1, "Grainy days", "moody", "4:30", R.drawable.img1),
+    Song(2, "Coffee", "Kainbeats", "3:45", R.drawable.img2),
+    Song(3, "raindrops", "Rainyxxy", "2:50", R.drawable.img3),
+    Song(4, "Tokyo", "SmYang", "5:15", R.drawable.img4),
+    Song(5, "Lullaby", "iamfinenow", "3:20", R.drawable.img5),
+    Song(6, "Midnight", "Kainbeats", "4:10", R.drawable.img1),
+    Song(7, "Sunset", "moody", "3:55", R.drawable.img2),
+    Song(8, "Dreamscape", "Rainyxxy", "4:05", R.drawable.img3),
+    Song(9, "Whispers", "SmYang", "3:30", R.drawable.img4),
+    Song(10, "Echoes", "iamfinenow", "4:25", R.drawable.img5),
+    Song(11, "Shape of you", "moody", "4:30", R.drawable.img_extra),
+    Song(12, "Coffee", "Kainbeats", "3:45", R.drawable.img1),
+    Song(13, "raindrops", "Rainyxxy", "2:50", R.drawable.img2),
+    Song(14, "Tokyo", "SmYang", "5:15", R.drawable.img3),
+    Song(15, "Lullaby", "iamfinenow", "3:20", R.drawable.img4),
+    Song(16, "Midnight", "Kainbeats", "4:10", R.drawable.img5),
+    Song(17, "Sunset", "moody", "3:55", R.drawable.img2),
+    Song(18, "Dreamscape", "Rainyxxy", "4:05", R.drawable.img1),
+    Song(19, "Whispers", "SmYang", "3:30", R.drawable.img5),
+    Song(20, "Echoes", "iamfinenow", "4:25", R.drawable.img_extra),
+)
