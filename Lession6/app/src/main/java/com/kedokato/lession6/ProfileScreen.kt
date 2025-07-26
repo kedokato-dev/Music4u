@@ -1,6 +1,6 @@
 package com.kedokato.lession6
 
-import android.R.color.white
+import android.R.attr.contentDescription
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
@@ -55,7 +55,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.example.compose.ColorFamily
 import com.example.compose.getCurrentColorScheme
 import kotlinx.coroutines.delay
 
@@ -231,17 +230,17 @@ fun ProfileTopBar(
             )
         },
         navigationIcon = {
-            Icon(
-                painter = painterResource(R.drawable.dark_mode_1),
-                contentDescription = "Toggle Theme",
-                tint = colorScheme.primary,
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .size(24.dp)
-                    .clickable {
-                        onThemeToggle()
-                    }
-            )
+            isDarkTheme.let { darkTheme ->
+                Icon(
+                    painter = painterResource(id = if (darkTheme) R.drawable.light_mode_1 else R.drawable.dark_mode_1),
+                    contentDescription = "Theme Toggle Icon",
+                    modifier = modifier
+                        .size(24.dp)
+                        .clickable {
+                            onThemeToggle()
+                        }
+                )
+            }
         }
     )
 }
