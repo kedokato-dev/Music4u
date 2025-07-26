@@ -1,6 +1,5 @@
 package com.kedokato.lession6
 
-import android.R.attr.contentDescription
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
