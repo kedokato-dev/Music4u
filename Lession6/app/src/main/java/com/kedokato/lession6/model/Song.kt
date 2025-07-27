@@ -1,5 +1,4 @@
-package com.kedokato.lession6
-
+package com.kedokato.lession6.model
 
 data class Song(
     val id: Int,

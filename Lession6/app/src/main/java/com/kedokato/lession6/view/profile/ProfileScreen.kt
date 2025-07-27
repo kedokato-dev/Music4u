@@ -1,8 +1,11 @@
-package com.kedokato.lession6
+package com.kedokato.lession6.view.profile
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -55,6 +58,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.compose.getCurrentColorScheme
+import com.kedokato.lession6.R
 import kotlinx.coroutines.delay
 
 @Composable
@@ -161,15 +165,15 @@ fun ProfileContent(
 
             AnimatedVisibility(
                 visible = showDialog.value,
-                enter = androidx.compose.animation.fadeIn(
+                enter = fadeIn(
                     animationSpec = tween(300)
-                ) + androidx.compose.animation.scaleIn(
+                ) + scaleIn(
                     initialScale = 0.5f,
                     animationSpec = tween(300)
                 ),
                 exit = fadeOut(
                     animationSpec = tween(300)
-                ) + androidx.compose.animation.scaleOut(
+                ) + scaleOut(
                     targetScale = 0.5f,
                     animationSpec = tween(300)
                 )

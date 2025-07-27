@@ -1,11 +1,11 @@
-package com.kedokato.lession6
+package com.kedokato.lession6.view.config
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
 class ThemeManager {
-    var isDarkTheme by mutableStateOf(false)
+    var isDarkTheme by mutableStateOf(true)
         private set
 
     fun toggleTheme() {
