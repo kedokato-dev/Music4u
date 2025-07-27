@@ -19,6 +19,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
 import com.example.compose.AppTheme
+import com.kedokato.lession6.navigation.AppNavigation
+import com.kedokato.lession6.view.config.ThemeManager
+import com.kedokato.lession6.view.playlist.PlayListScreen
+import com.kedokato.lession6.view.playlist.PlayListTopBar
+import com.kedokato.lession6.view.profile.ProfileTopBar
+import com.kedokato.lession6.view.profile.ProfileView
 
 
 class MainActivity : ComponentActivity() {
@@ -30,9 +36,7 @@ class MainActivity : ComponentActivity() {
 
 
         setContent {
-            var isEditState by rememberSaveable { mutableStateOf(false) }
             val themeManager = remember { ThemeManager() }
-
 
             AppTheme(darkTheme = themeManager.isDarkTheme) {
                 // Cập nhật status bar theo theme
@@ -42,68 +46,10 @@ class MainActivity : ComponentActivity() {
                 )?.isAppearanceLightStatusBars =
                     !themeManager.isDarkTheme
 
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    topBar = {
-                        ProfileTopBar(
-                            title = "Profile",
-                            modifier = Modifier,
-                            isEdit = isEditState,
-                            onIconClick = {
-                                isEditState = !isEditState
-                            },
-                            onThemeToggle = {
-                                themeManager.toggleTheme()
-                            },
-                            isDarkTheme = themeManager.isDarkTheme,
-                        )
-                    }
-                ) { innerPadding ->
-                    Surface(
-                        modifier = Modifier.padding(innerPadding)
-                    ) {
-                        Column {
-                            ProfileView(
-                                isEditMode = isEditState,
-                                onEditModeChange = { isEditState = it },
-                                isDarkTheme = themeManager.isDarkTheme,
-                                modifier = Modifier
-                            )
-                        }
-
-                        setContent {
-                            var typeDisplayState by rememberSaveable { mutableStateOf(true) }
-                            var isSort by rememberSaveable { mutableStateOf(false) }
-                            AppTheme {
-                                Scaffold(
-                                    modifier = Modifier.fillMaxSize(),
-                                    topBar = {
-                                        PlayListTopBar(
-                                            typeDisplay = typeDisplayState,
-                                            onToggleDisplay = {
-                                                typeDisplayState = !typeDisplayState
-                                            },
-                                            isSort = isSort,
-                                            onSort = { isSort = !isSort },
-                                            onCancelSort = { isSort = !isSort },
-                                        )
-
-
-                                    }
-                                ) { innerPadding ->
-                                    Surface(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .padding(top = innerPadding.calculateTopPadding())
-                                            .background(Color.White),
-                                    ) {
-                                        PlayListScreen(typeDisplayState, isSort)
-                                    }
-                                }
-                            }
-
-                        }
-                    }
+                Surface(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    AppNavigation()
                 }
             }
         }

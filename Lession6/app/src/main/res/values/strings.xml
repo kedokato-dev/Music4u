@@ -1,3 +1,22 @@
 <resources>
-    <string name="app_name">Lession6</string>
+    <string name="app_name">Apero Music</string>
+
+    <string name="login_title">Login to your account</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="remember_me">Remember me</string>
+    <string name="login_button">Login</string>
+
+
+    <string name="dont_have_an_account">Don’t have an account?</string>
+
+    <string name="sign_up_bottom">Sign up</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="email">Email</string>
+
+    <string name="username_error">Username is valid</string>
+    <string name="password_error">Password is valid</string>
+    <string name="email_error">Email is valid</string>
+    <string name="confirm_password_error">Confirm password do not match</string>
+
 </resources>
