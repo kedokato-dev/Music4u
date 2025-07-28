@@ -1,79 +1,107 @@
 package com.kedokato.lession6.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
+import androidx.compose.ui.Modifier
+import androidx.navigation3.runtime.entry
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.ui.NavDisplay
+import com.kedokato.lession6.view.home.HomeScreen
 import com.kedokato.lession6.view.login.LoginScreen
+import com.kedokato.lession6.view.playlist.PlayListScreen
+import com.kedokato.lession6.view.profile.ProfileView
 import com.kedokato.lession6.view.signup.SignUpScreen
 import com.kedokato.lession6.view.splash.SplashScreen
-import kotlinx.coroutines.delay
 
 @Composable
-fun AppNavigation() {
-    val navController = rememberNavController()
-    val navigationHelper = remember { NavigationHelper(navController) }
+fun AppNavigation(
+    modifier: Modifier = Modifier,
+) {
+    val backStack = rememberNavBackStack<RememberScreen>(
+        RememberScreen.LoginScreen(
+            username = "",
+            password = ""
+        )
+    )
 
-    NavHost(
-        navController = navController,
-        startDestination = AppScreens.Splash.route
-    ) {
-        composable(AppScreens.Splash.route) {
-            SplashScreen(
-                modifier = androidx.compose.ui.Modifier
-            )
-            LaunchedEffect(key1 = Unit) {
-                delay(2000)
-                navigationHelper.navigateToLogin()
+    NavDisplay(
+        backStack = backStack,
+        onBack = { backStack.removeLastOrNull() },
+        entryProvider = entryProvider {
+            entry<RememberScreen.SplashScreen> {
+                SplashScreen(
+                    modifier = modifier,
+                )
             }
+
+            entry<RememberScreen.LoginScreen> { entry ->
+                LoginScreen(
+                    modifier = modifier,
+                    onSignUpClick = {
+                        backStack.add(
+                            RememberScreen.SignUpScreen
+                        )
+                    },
+                    onLoginClick = {
+                        backStack.clear()
+                        backStack.add(
+                            RememberScreen.HomeScreen
+                        )
+                    },
+                )
+            }
+
+            entry<RememberScreen.SignUpScreen> {
+                SignUpScreen(
+                    modifier = modifier,
+                    onBackClick = backStack::removeLastOrNull,
+                    onSignUpClick = { username: String,
+                                      password: String ->
+                        backStack.add(
+                            RememberScreen.LoginScreen(
+                                username = username,
+                                password = password
+                            )
+                        )
+                    }
+                )
+            }
+
+            entry<RememberScreen.HomeScreen> {
+                HomeScreen(
+                    modifier = modifier,
+                    onProfileClick = {
+                        backStack.add(
+                            RememberScreen.ProfileScreen
+                        )
+                    }
+                )
+            }
+
+            entry<RememberScreen.ProfileScreen> {
+                ProfileView(
+                    isEditMode = false,
+                    onEditModeChange = {
+                        backStack.add(
+                            RememberScreen.HomeScreen
+                        )
+                    },
+                    isDarkTheme = false,
+                    modifier = modifier,
+
+                )
+            }
+
+            entry<RememberScreen.PlaylistScreen> {
+                PlayListScreen(
+                    typeDisplay = true,
+                    isSort = false
+                )
+            }
+
+
         }
 
 
-        composable(
-            route = AppScreens.Login.route,
-            arguments = listOf(
-                navArgument("username") {
-                    type = NavType.StringType
-                    defaultValue = ""
-                },
-                navArgument("password") {
-                    type = NavType.StringType
-                    defaultValue = ""
-                }
-            )
-        ) { backStackEntry ->
-            val username = backStackEntry.arguments?.getString("username") ?: ""
-            val password = backStackEntry.arguments?.getString("password") ?: ""
-
-            LoginScreen(
-                modifier = androidx.compose.ui.Modifier,
-                initialUsername = username,
-                initialPassword = password,
-                onSignUpClick = { navigationHelper.navigateToSignUp() },
-                onLoginClick = { navigationHelper.navigateToPlaylist() }
-            )
-        }
-
-        composable(AppScreens.SignUp.route) {
-            SignUpScreen(
-                modifier = androidx.compose.ui.Modifier,
-                onBackClick = { navigationHelper.navigateBack() },
-                onSignUpClick = { username, password ->
-                    navigationHelper.navigateToLoginWithCredentials(username, password)
-                }
-            )
-        }
-
-        composable(AppScreens.Profile.route) {
-            // Profile screen will be implemented later
-        }
-
-        composable(AppScreens.Playlist.route) {
-            // Playlist screen will be implemented later
-        }
-    }
+    )
 }

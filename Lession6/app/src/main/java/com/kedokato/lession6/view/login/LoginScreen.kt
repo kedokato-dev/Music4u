@@ -44,8 +44,8 @@ fun LoginScreen(
     modifier: Modifier = Modifier,
     initialUsername: String = "",
     initialPassword: String = "",
-    onSignUpClick: () -> Unit = {},
-    onLoginClick: () -> Unit = {}
+    onSignUpClick: () -> Unit,
+    onLoginClick: () -> Unit
 ) {
     val colorScheme = getCurrentColorScheme()
     var isChecked by remember { mutableStateOf(false) }
@@ -169,7 +169,10 @@ fun LoginScreen(
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
-    LoginScreen(modifier = Modifier)
+    LoginScreen(modifier = Modifier,
+        onSignUpClick = {},
+        onLoginClick = {}
+    )
 }
 
 

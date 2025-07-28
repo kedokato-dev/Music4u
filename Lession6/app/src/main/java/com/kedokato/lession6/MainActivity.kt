@@ -33,8 +33,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         WindowCompat.getInsetsController(window, window.decorView)?.isAppearanceLightStatusBars =
             false
-
-
         setContent {
             val themeManager = remember { ThemeManager() }
 

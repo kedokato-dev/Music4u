@@ -70,7 +70,7 @@ fun PlayListScreen(typeDisplay: Boolean, isSort: Boolean = false) {
             items(songs.size) { index ->
                 val song = songs[index]
                 ReorderableItem(reorderState, key = song.id) { isDragging ->
-                    PlayListItem(song, reorderState, isSort, modifier = Modifier.animateItemPlacement())
+                    PlayListItem(song, reorderState, isSort, modifier = Modifier)
                 }
             }
         }
