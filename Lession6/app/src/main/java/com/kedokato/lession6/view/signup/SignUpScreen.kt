@@ -38,9 +38,6 @@ import com.kedokato.lession6.component.Button
 import com.kedokato.lession6.component.Logo
 import com.kedokato.lession6.component.TextInputField
 import com.kedokato.lession6.component.TextInputFieldPassword
-import com.kedokato.lession6.navigation.AppScreens
-import com.kedokato.lession6.navigation.NavigationHelper
-import com.kedokato.lession6.navigation.bottomNavItems
 
 @Composable
 fun SignUpScreen(
