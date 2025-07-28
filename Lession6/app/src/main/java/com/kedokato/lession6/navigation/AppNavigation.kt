@@ -2,9 +2,11 @@ package com.kedokato.lession6.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.kedokato.lession6.view.home.HomeScreen
 import com.kedokato.lession6.view.login.LoginScreen
@@ -27,6 +29,10 @@ fun AppNavigation(
     NavDisplay(
         backStack = backStack,
         onBack = { backStack.removeLastOrNull() },
+        entryDecorators = listOf(
+            rememberSavedStateNavEntryDecorator(),
+            rememberViewModelStoreNavEntryDecorator()
+        ),
         entryProvider = entryProvider {
             entry<RememberScreen.SplashScreen> {
                 SplashScreen(
@@ -45,7 +51,7 @@ fun AppNavigation(
                     onLoginClick = {
                         backStack.clear()
                         backStack.add(
-                            RememberScreen.HomeScreen
+                            RememberScreen.NestedGraph
                         )
                     },
                 )
@@ -96,6 +102,14 @@ fun AppNavigation(
                 PlayListScreen(
                     typeDisplay = true,
                     isSort = false
+                )
+            }
+
+            entry<RememberScreen.NestedGraph> {
+                NestedGraph(
+                    navigateToSettings = {
+                        backStack.add(RememberScreen.ProfileScreen)
+                    }
                 )
             }
 

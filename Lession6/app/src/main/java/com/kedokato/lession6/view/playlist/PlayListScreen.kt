@@ -4,15 +4,20 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
@@ -23,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -30,48 +36,76 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.kedokato.lession6.R
 import com.kedokato.lession6.model.Song
-import org.burnoutcrew.reorderable.ReorderableItem
-import org.burnoutcrew.reorderable.ReorderableLazyListState
-import org.burnoutcrew.reorderable.detectReorder
-import org.burnoutcrew.reorderable.rememberReorderableLazyListState
-import org.burnoutcrew.reorderable.reorderable
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun PlayListScreen(typeDisplay: Boolean, isSort: Boolean = false) {
     var songs by remember { mutableStateOf(listSong.toMutableList()) }
-
-    val reorderState = rememberReorderableLazyListState(
-        onMove = { from, to ->
-            songs = songs.toMutableList().apply {
-                add(to.index, removeAt(from.index))
-            }
-        },
-
-    )
+    var draggedIndex by remember { mutableStateOf(-1) }
+    var dragOffset by remember { mutableStateOf(Offset.Zero) }
+    val listState = rememberLazyListState()
 
     if (typeDisplay) {
         LazyColumn(
-            state = reorderState.listState,
+            state = listState,
             modifier = Modifier
                 .background(Color.Black)
                 .padding(top = 16.dp)
                 .padding(horizontal = 8.dp)
-                .reorderable(reorderState)
         ) {
-            items(songs.size) { index ->
-                val song = songs[index]
-                ReorderableItem(reorderState, key = song.id) { isDragging ->
-                    PlayListItem(song, reorderState, isSort, modifier = Modifier)
-                }
+            itemsIndexed(
+                items = songs,
+                key = { _, song -> song.id }
+            ) { index, song ->
+                val isDragging = draggedIndex == index
+                PlayListItem(
+                    song = song,
+                    isSort = isSort,
+                    isDragging = isDragging,
+                    dragOffset = if (isDragging) dragOffset else Offset.Zero,
+                    onDragStart = {
+                        if (isSort) {
+                            draggedIndex = index
+                        }
+                    },
+                    onDragEnd = {
+                        draggedIndex = -1
+                        dragOffset = Offset.Zero
+                    },
+                    onDrag = { offset ->
+                        dragOffset += offset
+
+                        // Calculate target index based on drag position
+                        val itemHeight = 80.dp.value * 3 // Approximate item height in pixels
+                        val targetIndex = (index + (dragOffset.y / itemHeight).roundToInt())
+                            .coerceIn(0, songs.size - 1)
+
+                        if (targetIndex != index && targetIndex in songs.indices) {
+                            // Perform the reorder
+                            val draggedItem = songs[index]
+                            songs = songs.toMutableList().apply {
+                                removeAt(index)
+                                add(targetIndex, draggedItem)
+                            }
+                            draggedIndex = targetIndex
+                            dragOffset = Offset.Zero
+                        }
+                    },
+                    modifier = Modifier.animateItem()
+                )
             }
         }
     } else {
@@ -97,7 +131,7 @@ fun PlayListTopBar(
     onToggleDisplay: () -> Unit,
     isSort: Boolean,
     onSort: () -> Unit,
-    onCancelSort: () -> Unit // new callback
+    onCancelSort: () -> Unit
 ) {
     CenterAlignedTopAppBar(
         title = { Text(text = "My Playlist", style = MaterialTheme.typography.headlineSmall) },
@@ -158,12 +192,31 @@ fun PlayListTopBar(
     )
 }
 
-
 @Composable
-fun PlayListItem(song: Song, reorderState: ReorderableLazyListState, isSort: Boolean, modifier: Modifier = Modifier) {
+fun PlayListItem(
+    song: Song,
+    isSort: Boolean,
+    isDragging: Boolean = false,
+    dragOffset: Offset = Offset.Zero,
+    onDragStart: () -> Unit = {},
+    onDragEnd: () -> Unit = {},
+    onDrag: (Offset) -> Unit = {},
+    modifier: Modifier = Modifier
+) {
     var expanded by remember { mutableStateOf(false) }
+
     Row(
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
+            .offset {
+                if (isDragging) {
+                    IntOffset(0, dragOffset.y.roundToInt())
+                } else {
+                    IntOffset.Zero
+                }
+            }
+            .zIndex(if (isDragging) 1f else 0f)
+            .background(if (isDragging) Color.DarkGray else Color.Transparent)
     ) {
         Image(
             painter = painterResource(id = song.image),
@@ -215,19 +268,26 @@ fun PlayListItem(song: Song, reorderState: ReorderableLazyListState, isSort: Boo
             song = song
         )
 
-        if (isSort){
+        if (isSort) {
             Image(
                 painter = painterResource(id = R.drawable.drag),
                 contentDescription = "Drag Handle",
                 modifier = Modifier
                     .size(24.dp)
                     .align(Alignment.CenterVertically)
-                    .detectReorder(reorderState)
                     .padding(end = 8.dp)
+                    .pointerInput(Unit) {
+                        detectDragGestures(
+                            onDragStart = { onDragStart() },
+                            onDragEnd = { onDragEnd() },
+                            onDrag = { change, dragAmount ->
+                                onDrag(dragAmount)
+                            }
+                        )
+                    }
             )
         }
     }
-
 }
 
 @Composable
@@ -289,7 +349,6 @@ fun PlayGridItem(song: Song) {
             modifier = Modifier.padding(horizontal = 8.dp),
         )
     }
-
 }
 
 @Composable
@@ -326,12 +385,10 @@ fun Menu(expanded: Boolean, onDismiss: () -> Unit, song: Song) {
             },
             onClick = {
                 onDismiss()
-
             }
         )
     }
 }
-
 
 @Preview
 @Composable
