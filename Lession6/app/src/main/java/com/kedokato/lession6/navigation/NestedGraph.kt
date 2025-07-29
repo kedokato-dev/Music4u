@@ -3,6 +3,7 @@ package com.kedokato.lession6.navigation
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -21,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.entry
@@ -50,8 +52,13 @@ fun NestedGraph(onProfileClick: () -> Unit) {
         bottomBar = {
             NavigationBar(
                 containerColor = colorScheme.primary,
-//                contentColor = contentColorFor(colorScheme.primary),
-                modifier = Modifier,
+                modifier = Modifier.graphicsLayer{
+                    shape = RoundedCornerShape(
+                        topStart = 20.dp,
+                        topEnd = 20.dp
+                    )
+                    clip = true
+                },
                 tonalElevation = 8.dp,
             ) {
                 bottomBarItems.forEach { destination ->

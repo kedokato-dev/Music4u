@@ -60,7 +60,6 @@ import com.kedokato.lession6.component.DialogWithImage
 import com.kedokato.lession6.component.TextArea
 import kotlinx.coroutines.delay
 
-const val PICK_IMAGE_REQUEST = 100
 
 @Composable
 fun ProfileView(
@@ -444,33 +443,6 @@ fun EditContainer(
         )
     }
 }
-
-@Composable
-fun SubmitButton(title: String = "Submit", onClick: () -> Unit = {}, colorScheme: ColorScheme) {
-    Button(
-        onClick = onClick,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = colorScheme.surfaceTint,
-            contentColor = colorScheme.onSecondary
-        ),
-        shape = RoundedCornerShape(12.dp),
-        modifier = Modifier
-            .padding(horizontal = 32.dp, vertical = 16.dp)
-    ) {
-        Text(text = title)
-    }
-}
-
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewImage(){
-//    AvatarImage(
-//        modifier = Modifier.fillMaxSize(),
-//        colorScheme = getCurrentColorScheme()
-//    )
-//}
-
-
 
 @Preview(showBackground = true)
 @Composable

@@ -92,7 +92,7 @@ fun AppNavigation(
                             RememberScreen.HomeScreen
                         )
                     },
-                    isDarkTheme = false,
+                    isDarkTheme = true,
                     modifier = modifier,
 
                 )
