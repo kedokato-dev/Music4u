@@ -393,13 +393,13 @@ fun Menu(expanded: Boolean, onDismiss: () -> Unit, song: Song) {
 @Preview
 @Composable
 fun PlayListScreenPreview() {
-    PlayListScreen(typeDisplay = true, isSort = true)
+    PlayListScreen(typeDisplay = false, isSort = true)
 }
 
 @Preview
 @Composable
 fun PlayListTopBarPreview() {
-    PlayListTopBar(typeDisplay = false, onToggleDisplay = {}, isSort = true, onSort = {},
+    PlayListTopBar(typeDisplay = true, onToggleDisplay = {}, isSort = true, onSort = {},
         onCancelSort = {})
 }
 

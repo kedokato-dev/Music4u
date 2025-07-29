@@ -42,7 +42,6 @@ android {
 
 dependencies {
 
-    implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
 
     implementation(libs.navigation.compose)
 
@@ -50,6 +49,8 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.kotlinx.serialization.core)
+
+    implementation(libs.coil2.compose)
 
 
 

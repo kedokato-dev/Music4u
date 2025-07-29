@@ -57,7 +57,6 @@ fun LoginScreen(
             .fillMaxSize()
             .background(colorScheme.background)
     ) {
-        // Nội dung chính có thể cuộn
         Column(
             modifier = Modifier
                 .fillMaxSize()
