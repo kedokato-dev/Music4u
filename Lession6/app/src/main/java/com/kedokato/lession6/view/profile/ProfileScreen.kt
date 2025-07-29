@@ -110,12 +110,8 @@ fun ProfileContent(
             },
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Box(
-            modifier = modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
+
             AvatarImage(modifier = modifier, colorScheme)
-        }
 
         Spacer(modifier = modifier.size(16.dp))
 

@@ -26,13 +26,13 @@ sealed class BottomBarScreen(
     @Serializable
     data object Playlist : BottomBarScreen(
         icon = R.drawable.play_list,
-        title = "Search"
+        title = "Playlist"
     )
 
     @Serializable
     data object Library : BottomBarScreen(
         icon = R.drawable.library,
-        title = "Profile"
+        title = "Library"
     )
 }
 

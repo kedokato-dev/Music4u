@@ -19,7 +19,7 @@ fun Button(
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(0.9f)
+        modifier = modifier.fillMaxWidth()
             .height(56.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = getCurrentColorScheme().primary,

@@ -107,15 +107,13 @@ fun AppNavigation(
 
             entry<RememberScreen.NestedGraph> {
                 NestedGraph(
-                    navigateToSettings = {
-                        backStack.add(RememberScreen.ProfileScreen)
+                    onProfileClick = {
+                        backStack.add(
+                            RememberScreen.ProfileScreen
+                        )
                     }
                 )
             }
-
-
         }
-
-
     )
 }
