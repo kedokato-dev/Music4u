@@ -3,8 +3,10 @@ package com.kedokato.lession6.component
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -127,16 +129,65 @@ fun TextInputFieldPassword(
 }
 
 
+@Composable
+fun TextArea(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    hintText: String,
+    line: Int = 1,
+    height: Int = 50,
+    singleLine: Boolean = true,
+    isError: Boolean = false,
+    isEnable: Boolean = false,
+    colorScheme: ColorScheme
+) {
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        placeholder = {
+            Text(
+                text = hintText,
+                color = colorScheme.onSurfaceVariant,
+            )
+        },
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = height.dp)
+            .border(
+                width = 1.dp,
+                color = colorScheme.outline,
+                shape = RoundedCornerShape(8.dp)
+            ),
+        maxLines = line,
+        singleLine = singleLine,
+        isError = isError,
+        enabled = isEnable,
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = colorScheme.onSecondary,
+            unfocusedContainerColor = colorScheme.onSecondary,
+            disabledContainerColor = colorScheme.onSecondary,
+            errorContainerColor = colorScheme.surface,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            focusedTextColor = colorScheme.primary,
+            unfocusedTextColor = colorScheme.primary,
+            disabledTextColor = colorScheme.primary,
+        )
+    )
+}
+
+
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
     AppTheme {
-        TextInputFieldPassword(
+        TextInputField(
             value = "password",
             onValueChange = {},
             label = "Password",
             icon = R.drawable.lock,
-            modifier = Modifier.fillMaxWidth(0.9f)
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }

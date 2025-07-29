@@ -1,5 +1,8 @@
 package com.kedokato.lession6.view.profile
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -19,7 +22,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -27,16 +29,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,20 +44,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Green
-import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
+import coil.compose.rememberAsyncImagePainter
 import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.R
+import com.kedokato.lession6.component.Button
+import com.kedokato.lession6.component.DialogWithImage
+import com.kedokato.lession6.component.TextArea
 import kotlinx.coroutines.delay
+
+const val PICK_IMAGE_REQUEST = 100
 
 @Composable
 fun ProfileView(
@@ -98,6 +99,16 @@ fun ProfileContent(
     val showDialog = remember { mutableStateOf(false) }
     val painter = painterResource(id = R.drawable.succes)
 
+    val context = LocalContext.current
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        imageUri = uri
+    }
+
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -111,7 +122,15 @@ fun ProfileContent(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
 
-            AvatarImage(modifier = modifier, colorScheme)
+        AvatarImage(
+            modifier = modifier,
+            colorScheme = colorScheme,
+            imageUri = imageUri,
+            onClickCamera = {
+                launcher.launch(arrayOf("image/*"))
+
+            }
+        )
 
         Spacer(modifier = modifier.size(16.dp))
 
@@ -132,10 +151,11 @@ fun ProfileContent(
         )
 
         if (isEditMode) {
-            SubmitButton(
-                title = "Submit",
-                onClick = {
-                    nameError =
+          Button(
+              text = "Submit",
+              modifier = Modifier.fillMaxWidth(0.3f),
+              onClick ={
+                  nameError =
                         if (name.isBlank() || !name.matches(Regex("^[\\p{L} ]*\$"))) "Name is invalid" else null
                     phoneError =
                         if (!phone.matches(Regex("^\\d{10}$"))) "Phone is invalid" else null
@@ -146,9 +166,7 @@ fun ProfileContent(
                         showDialog.value = true
                         onEditModeChange(false)
                     }
-                },
-                colorScheme = colorScheme
-            )
+              })
         }
 
         if (showDialog.value) {
@@ -243,55 +261,6 @@ fun ProfileTopBar(
         }
     )
 }
-
-@Composable
-fun TextArea(
-    value: String,
-    onValueChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    hintText: String,
-    line: Int = 1,
-    height: Int = 50,
-    singleLine: Boolean = true,
-    isError: Boolean = false,
-    isEnable: Boolean = false,
-    colorScheme: ColorScheme
-) {
-    TextField(
-        value = value,
-        onValueChange = onValueChange,
-        placeholder = {
-            Text(
-                text = hintText,
-                color = colorScheme.onSurfaceVariant,
-            )
-        },
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(min = height.dp)
-            .border(
-                width = 1.dp,
-                color = colorScheme.outline,
-                shape = RoundedCornerShape(8.dp)
-            ),
-        maxLines = line,
-        singleLine = singleLine,
-        isError = isError,
-        enabled = isEnable,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = colorScheme.onSecondary,
-            unfocusedContainerColor = colorScheme.onSecondary,
-            disabledContainerColor = colorScheme.onSecondary,
-            errorContainerColor = colorScheme.surface,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            focusedTextColor = colorScheme.primary,
-            unfocusedTextColor = colorScheme.primary,
-            disabledTextColor = colorScheme.primary,
-        )
-    )
-}
-
 @Composable
 fun LabelForTextField(
     lable: String,
@@ -307,19 +276,68 @@ fun LabelForTextField(
 @Composable
 fun AvatarImage(
     modifier: Modifier,
-    colorScheme: ColorScheme
+    colorScheme: ColorScheme,
+    imageUri: Uri? = null,
+    onClickCamera: () -> Unit = {}
 ) {
-    Image(
-        painter = painterResource(id = R.drawable.avatar),
-        contentDescription = "Avatar Image",
-        modifier = modifier
-            .size(150.dp)
-            .border(
-                width = 2.dp,
-                color = colorScheme.primary,
-                shape = RoundedCornerShape(75.dp)
+    Box(){
+        if (imageUri != null) {
+            Image(
+                painter = rememberAsyncImagePainter(imageUri),
+                contentDescription = "Avatar Image",
+                contentScale = ContentScale.Crop,
+                modifier = modifier
+                    .size(150.dp)
+                    .border(
+                        width = 2.dp,
+                        color = colorScheme.primary,
+                        shape = RoundedCornerShape(150.dp)
+                    )
+                    .clip(RoundedCornerShape(150.dp))
             )
-    )
+        } else {
+            Image(
+                painter = painterResource(id = R.drawable.avatar),
+                contentDescription = "Avatar Image",
+                contentScale = ContentScale.Crop,
+                modifier = modifier
+                    .size(150.dp)
+                    .border(
+                        width = 2.dp,
+                        color = colorScheme.primary,
+                        shape = RoundedCornerShape(150.dp)
+                    )
+                    .clip(RoundedCornerShape(150.dp))
+            )
+        }
+
+        Box(
+            modifier = modifier
+                .align(Alignment.BottomEnd)
+                .padding(8.dp)
+                .background(
+                    color = colorScheme.surface,
+                    shape = RoundedCornerShape(20.dp)
+                )
+        ){
+            Icon(
+                painter = painterResource(id = R.drawable.camera),
+                contentDescription = "Camera Icon",
+                modifier = modifier
+                    .size(40.dp)
+                    .align(Alignment.CenterEnd)
+                    .padding(8.dp)
+                    .background(
+                        color = colorScheme.surface,
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                    .clickable {
+                        onClickCamera()
+                    },
+                tint = colorScheme.primary
+            )
+        }
+    }
 }
 
 @Composable
@@ -443,59 +461,16 @@ fun SubmitButton(title: String = "Submit", onClick: () -> Unit = {}, colorScheme
     }
 }
 
-@Composable
-fun DialogWithImage(
-    onDismissRequest: () -> Unit,
-    painter: Painter,
-    imageDescription: String,
-    title: String = "Success!",
-    subTitle: String = "Your information has been updated!",
-    colorScheme: ColorScheme = MaterialTheme.colorScheme
-) {
-    Dialog(onDismissRequest = { onDismissRequest() }) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(375.dp)
-                .padding(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = colorScheme.surface
-            ),
-            shape = RoundedCornerShape(16.dp),
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Image(
-                    painter = painter,
-                    contentDescription = imageDescription,
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .size(100.dp)
-                )
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.displayMedium,
-                    color = Green,
-                    modifier = Modifier.padding(16.dp),
-                )
+//@Preview(showBackground = true)
+//@Composable
+//fun PreviewImage(){
+//    AvatarImage(
+//        modifier = Modifier.fillMaxSize(),
+//        colorScheme = getCurrentColorScheme()
+//    )
+//}
 
-                Text(
-                    text = subTitle,
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                        .fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                )
-            }
-        }
-    }
-}
+
 
 @Preview(showBackground = true)
 @Composable
