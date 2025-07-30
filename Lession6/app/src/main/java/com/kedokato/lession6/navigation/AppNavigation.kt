@@ -86,7 +86,7 @@ fun AppNavigation(
 
             entry<RememberScreen.ProfileScreen> {
                 ProfileView(
-                    isEditMode = false,
+                    isEditMode = true,
                     onEditModeChange = {
                         backStack.add(
                             RememberScreen.HomeScreen

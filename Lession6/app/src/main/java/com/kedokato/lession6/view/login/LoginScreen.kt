@@ -21,6 +21,8 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,12 +34,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.R
 import com.kedokato.lession6.component.Button
 import com.kedokato.lession6.component.Logo
 import com.kedokato.lession6.component.TextInputField
 import com.kedokato.lession6.component.TextInputFieldPassword
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun LoginScreen(
@@ -45,12 +49,24 @@ fun LoginScreen(
     initialUsername: String = "",
     initialPassword: String = "",
     onSignUpClick: () -> Unit,
-    onLoginClick: () -> Unit
+    onLoginClick: () -> Unit,
+    viewModel: LoginViewModel = viewModel()
 ) {
     val colorScheme = getCurrentColorScheme()
-    var isChecked by remember { mutableStateOf(false) }
-    var username by remember { mutableStateOf(initialUsername) }
-    var password by remember { mutableStateOf(initialPassword) }
+    val state by viewModel.state.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.navigation.collectLatest { event ->
+            when (event) {
+                is LoginNavigation.OnClickLogin-> {
+                   onLoginClick()
+                }
+                null -> {
+                    // Do nothing
+                }
+            }
+        }
+    }
 
     Box(
         modifier = modifier
@@ -79,25 +95,40 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             TextInputField(
-                value = username,
+                value = state.username,
                 onValueChange = {
-                    username = it
+                    viewModel.processIntent(LoginIntent.UserNameChanged(it))
                 },
                 label = stringResource(R.string.username),
                 icon = R.drawable.person,
                 modifier = modifier.fillMaxWidth(1f)
             )
+            Text(
+                text = state.usernameError ?: "",
+                color = colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Start,
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             TextInputFieldPassword(
-                value = password,
+                value = state.password,
                 onValueChange = {
-                    password = it
+                    viewModel.processIntent(LoginIntent.PasswordChanged(it))
                 },
                 label = stringResource(R.string.password),
                 icon = R.drawable.lock,
                 modifier = modifier.fillMaxWidth(1f)
+            )
+
+            Text(
+                text = state.passwordError ?: "",
+                color = colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Start,
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -107,8 +138,11 @@ fun LoginScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Checkbox(
-                    checked = isChecked,
-                    onCheckedChange = { isChecked = it },
+                    checked = state.isRememberMe,
+                    onCheckedChange = {
+                        viewModel
+                            .processIntent(LoginIntent.RememberMeChanged)
+                    },
                     modifier = Modifier.size(24.dp),
                     colors = CheckboxDefaults.colors(
                         checkedColor = colorScheme.primary,
@@ -129,7 +163,7 @@ fun LoginScreen(
                 text = stringResource(R.string.login_button),
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
-                    onLoginClick()
+                    viewModel.processIntent(LoginIntent.Submit)
                 }
             )
 
@@ -140,7 +174,7 @@ fun LoginScreen(
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom =50.dp),
+                .padding(bottom = 50.dp),
             horizontalArrangement = Arrangement.Center
         ) {
             Text(
@@ -155,7 +189,7 @@ fun LoginScreen(
                 fontWeight = FontWeight.Bold,
                 color = colorScheme.primary,
                 modifier = Modifier.clickable{
-                    onSignUpClick()
+                    viewModel.processIntent(LoginIntent.SignUpClicked)
                 }
             )
         }

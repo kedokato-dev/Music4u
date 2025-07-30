@@ -20,6 +20,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,34 +33,35 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.R
 import com.kedokato.lession6.component.Button
 import com.kedokato.lession6.component.Logo
 import com.kedokato.lession6.component.TextInputField
 import com.kedokato.lession6.component.TextInputFieldPassword
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SignUpScreen(
     modifier: Modifier,
+    viewModel: SignUpViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onSignUpClick: (String, String) -> Unit = { _, _ -> },
 ) {
     val colorScheme = getCurrentColorScheme()
-    var username by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
+    val state by viewModel.state.collectAsState()
 
-    var usernameError by remember { mutableStateOf("") }
-    var emailError by remember { mutableStateOf("") }
-    var passwordError by remember { mutableStateOf("") }
-    var confirmPasswordError by remember { mutableStateOf("") }
-
-    val usernameErrorText = stringResource(R.string.username_error)
-    val emailErrorText = stringResource(R.string.email_error)
-    val passwordErrorText = stringResource(R.string.password_error)
-    val confirmPasswordErrorText = stringResource(R.string.confirm_password_error)
+    LaunchedEffect(Unit) {
+        viewModel.navigation.collectLatest {
+            event -> when
+                (event) {
+                is SignUpNavigationEvent.NavigateToLogin -> {
+                    onSignUpClick(state.username, state.password)
+                }
+            }
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxWidth(),
@@ -101,19 +104,18 @@ fun SignUpScreen(
                 Spacer(modifier = modifier.size(32.dp))
 
                 TextInputField(
-                    value = username,
+                    value = state.username,
                     onValueChange = {
-                        username = it
-                        usernameError = ""
+                      viewModel.processIntent(SignUpIntent.UsernameChanged(it))
                     },
                     label = stringResource(R.string.username),
                     icon = R.drawable.person,
                     modifier = modifier.fillMaxWidth(1f),
-                    error = usernameError
+                    error = state.usernameError ?: ""
                 )
 
                 Text(
-                    text = usernameError,
+                    text = state.usernameError ?: "",
                     color = colorScheme.error,
                     modifier = modifier.fillMaxWidth(1f),
                     textAlign = TextAlign.Start
@@ -122,9 +124,9 @@ fun SignUpScreen(
                 Spacer(modifier = modifier.size(16.dp))
 
                 TextInputFieldPassword(
-                    value = password,
+                    value = state.password,
                     onValueChange = {
-                        password = it
+                        viewModel.processIntent(SignUpIntent.PasswordChanged(it))
                     },
                     label = stringResource(R.string.password),
                     icon = R.drawable.lock,
@@ -132,7 +134,7 @@ fun SignUpScreen(
                 )
 
                 Text(
-                    text = passwordError,
+                    text = state.passwordError ?: "",
                     color = colorScheme.error,
                     modifier = modifier.fillMaxWidth(1f),
                     textAlign = TextAlign.Start
@@ -140,9 +142,9 @@ fun SignUpScreen(
                 Spacer(modifier = modifier.size(16.dp))
 
                 TextInputFieldPassword(
-                    value = confirmPassword,
+                    value = state.confirmPassword,
                     onValueChange = {
-                        confirmPassword = it
+                        viewModel.processIntent(SignUpIntent.ConfirmPasswordChanged(it))
                     },
                     label = stringResource(R.string.password),
                     icon = R.drawable.lock,
@@ -150,7 +152,7 @@ fun SignUpScreen(
                 )
 
                 Text(
-                    text = confirmPasswordError,
+                    text = state.confirmPasswordError ?: "",
                     color = colorScheme.error,
                     modifier = modifier.fillMaxWidth(1f),
                     textAlign = TextAlign.Start
@@ -159,9 +161,9 @@ fun SignUpScreen(
                 Spacer(modifier = modifier.size(16.dp))
 
                 TextInputField(
-                    value = email,
+                    value = state.email,
                     onValueChange = {
-                        email = it
+                        viewModel.processIntent(SignUpIntent.EmailChanged(it))
                     },
                     label = stringResource(R.string.email),
                     icon = R.drawable.person,
@@ -169,7 +171,7 @@ fun SignUpScreen(
                 )
 
                 Text(
-                    text = emailError,
+                    text = state.emailError ?: "",
                     color = colorScheme.error,
                     modifier = modifier.fillMaxWidth(1f),
                     textAlign = TextAlign.Start
@@ -182,37 +184,7 @@ fun SignUpScreen(
                     text = stringResource(R.string.sign_up_bottom),
                     modifier = modifier.fillMaxWidth(),
                     onClick = {
-                        usernameError = if (!isValidUsername(username)) {
-                            username = ""
-                            usernameErrorText
-                        } else {
-                            ""
-                        }
-
-                        emailError = if (!isValidEmail(email)) {
-                            email = ""
-                            emailErrorText
-                        } else {
-                            ""
-                        }
-
-                        passwordError = if (!isValidPassword(password)) {
-                            password = ""
-                            passwordErrorText
-                        } else {
-                            ""
-                        }
-
-                        confirmPasswordError = if (password != confirmPassword) {
-                            confirmPassword = ""
-                            confirmPasswordErrorText
-                        } else {
-                            ""
-                        }
-
-                        if (usernameError.isEmpty() && emailError.isEmpty() && passwordError.isEmpty() && confirmPasswordError.isEmpty()) {
-                            onSignUpClick(username, password)
-                        }
+                        viewModel.processIntent(SignUpIntent.Submit)
                     }
                 )
 
@@ -248,24 +220,6 @@ fun SignUpScreen(
             },
         )
     }
-
-
-fun isValidUsername(username: String): Boolean {
-    val usernameRegex = Regex("^[a-z0-9]+$", RegexOption.IGNORE_CASE)
-    return usernameRegex.matches(username)
-}
-
-fun isValidPassword(password: String): Boolean {
-    val passwordRegex = Regex("^[A-Za-z0-9]+$")
-    return passwordRegex.matches(password)
-}
-
-fun isValidEmail(email: String): Boolean {
-    val emailRegex = Regex("^[a-z0-9._-]+@apero\\.vn$")
-    return emailRegex.matches(email)
-}
-
-
 
 @Preview(showBackground = true)
 @Composable

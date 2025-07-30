@@ -38,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +53,8 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.R
@@ -63,16 +66,21 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun ProfileView(
+    viewModel: ProfileViewModel = viewModel(),
     isEditMode: Boolean = false,
     onEditModeChange: (Boolean) -> Unit = {},
     isDarkTheme: Boolean = false,
     modifier: Modifier
 ) {
+    val colorScheme = getCurrentColorScheme()
+    val state by viewModel.state.collectAsState()
+
     ProfileContent(
         isEditMode = isEditMode,
         onEditModeChange = onEditModeChange,
         isDarkTheme = isDarkTheme,
-        modifier
+        modifier,
+        state = state
     )
 }
 
@@ -81,19 +89,20 @@ fun ProfileContent(
     isEditMode: Boolean = false,
     onEditModeChange: (Boolean) -> Unit = {},
     isDarkTheme: Boolean = false,
-    modifier: Modifier
+    modifier: Modifier,
+    state: ProfileState
 ) {
     val focusManager = LocalFocusManager.current
     val colorScheme = getCurrentColorScheme(isDarkTheme)
 
-    var name by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
-    var university by remember { mutableStateOf("") }
-    var describe by remember { mutableStateOf("") }
-
-    var nameError by remember { mutableStateOf<String?>(null) }
-    var phoneError by remember { mutableStateOf<String?>(null) }
-    var universityError by remember { mutableStateOf<String?>(null) }
+//    var name by remember { mutableStateOf("") }
+//    var phone by remember { mutableStateOf("") }
+//    var university by remember { mutableStateOf("") }
+//    var describe by remember { mutableStateOf("") }
+//
+//    var nameError by remember { mutableStateOf<String?>(null) }
+//    var phoneError by remember { mutableStateOf<String?>(null) }
+//    var universityError by remember { mutableStateOf<String?>(null) }
 
     val showDialog = remember { mutableStateOf(false) }
     val painter = painterResource(id = R.drawable.succes)
@@ -121,6 +130,15 @@ fun ProfileContent(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
 
+        ProfileTopBar(
+            title = "Profile",
+            modifier = modifier,
+            isEdit = isEditMode,
+            onIconClick = { onEditModeChange(!isEditMode) },
+            onThemeToggle = { /* Handle theme toggle */ },
+            isDarkTheme = isDarkTheme
+        )
+
         AvatarImage(
             modifier = modifier,
             colorScheme = colorScheme,
@@ -134,8 +152,10 @@ fun ProfileContent(
         Spacer(modifier = modifier.size(16.dp))
 
         EditContainer(
-            name = name,
-            onNameChange = { name = it },
+            name = state.name,
+            onNameChange = {
+
+            },
             phone = phone,
             onPhoneChange = { phone = it },
             university = university,
