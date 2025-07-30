@@ -1,15 +1,35 @@
 package com.kedokato.lession6.view.profile
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-class ProfileViewModel: ViewModel(){
+class ProfileViewModel : ViewModel() {
 
     private val _state = MutableStateFlow(ProfileState())
     val state: StateFlow<ProfileState> = _state.asStateFlow()
+    
+    private val _openGalleryEvent = Channel<Unit>(Channel.BUFFERED)
+    val openGalleryEvent = _openGalleryEvent.receiveAsFlow()
+
+    fun onChangeAvatarClicked() {
+        viewModelScope.launch {
+            _openGalleryEvent.send(Unit)
+        }
+    }
+
+    fun onAvatarSelected(uri: Uri?) {
+        _state.update { it.copy(avatarUrl = uri) }
+    }
+
 
     fun processIntent(intent: ProflieIntent) {
         when (intent) {
@@ -46,7 +66,11 @@ class ProfileViewModel: ViewModel(){
             }
 
             ProflieIntent.isEdit -> {
-                _state.value = _state.value.copy(isEdit = !_state.value.isEdit)
+                _state.value = _state.value.copy(
+                    isEdit = !_state.value.isEdit,
+                    inputEnable = !_state.value.inputEnable,
+                    isSubmitVisible = !_state.value.isSubmitVisible
+                )
             }
 
             ProflieIntent.onBackPressed -> {
@@ -54,7 +78,13 @@ class ProfileViewModel: ViewModel(){
             }
 
             ProflieIntent.ChangeAvatar -> {
-                // Handle avatar change logic here
+                onChangeAvatarClicked()
+            }
+
+            ProflieIntent.ShowDialog -> {
+                viewModelScope.launch {
+                    showDialog()
+                }
             }
         }
     }
@@ -66,7 +96,6 @@ class ProfileViewModel: ViewModel(){
         var nameError: String? = null
         var phoneError: String? = null
         var universityError: String? = null
-        var descriptionError: String? = null
 
         if (currentState.name.isEmpty()) {
             nameError = "Name cannot be empty"
@@ -84,7 +113,7 @@ class ProfileViewModel: ViewModel(){
             isValid = false
         }
 
-        if ( currentState.university.isEmpty()) {
+        if (currentState.university.isEmpty()) {
             universityError = "University cannot be empty"
             isValid = false
         } else if (!validateUniversity(currentState.university)) {
@@ -98,7 +127,7 @@ class ProfileViewModel: ViewModel(){
                 nameError = nameError,
                 phoneError = phoneError,
                 universityError = universityError,
-                descriptionError = descriptionError
+                descriptionError = null
             )
         }
 
@@ -121,15 +150,12 @@ class ProfileViewModel: ViewModel(){
         return universityRegex.matches(university)
     }
 
-    private  fun submitForm() {
+    private fun submitForm() {
         if (validateForm()) {
             _state.update {
                 it.copy(
                     isSubmitVisible = false,
-                    nameEnabled = false,
-                    phoneEnabled = false,
-                    universityEnabled = false,
-                    descriptionEnabled = false,
+                    inputEnable = false,
                     isEdit = !_state.value.isEdit
                 )
             }
@@ -137,6 +163,15 @@ class ProfileViewModel: ViewModel(){
         } else {
             _state.update { it.copy(isSubmitVisible = true) }
         }
+    }
+
+    private suspend fun showDialog() {
+        if(_state.value.nameError == null && _state.value.phoneError == null && _state.value.universityError == null){
+            _state.update { it.copy(showDialog = true) }
+            delay(2000)
+            _state.update { it.copy(showDialog = false) }
+        }
+
     }
 
 }

@@ -10,4 +10,5 @@ sealed class ProflieIntent {
     data object isEdit : ProflieIntent()
     data object onBackPressed : ProflieIntent()
     data object ChangeAvatar : ProflieIntent()
+    data object ShowDialog : ProflieIntent()
 }

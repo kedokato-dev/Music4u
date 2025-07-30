@@ -1,5 +1,7 @@
 package com.kedokato.lession6.view.profile
 
+import android.net.Uri
+
 data class ProfileState(
     val name: String = "",
     val phone: String = "",
@@ -13,12 +15,9 @@ data class ProfileState(
 
     val isSubmitVisible: Boolean = false,
 
-    val nameEnabled: Boolean = false,
-    val phoneEnabled: Boolean = false,
-    val universityEnabled: Boolean = false,
-    val descriptionEnabled: Boolean = false,
+    val inputEnable: Boolean = false,
 
     val isEdit: Boolean = false,
-    val avatarUrl: String? = null,
+    val avatarUrl: Uri? = null,
     val showDialog: Boolean = false,
 )

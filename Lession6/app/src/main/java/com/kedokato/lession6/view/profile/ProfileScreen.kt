@@ -21,14 +21,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,7 +50,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.compose.getCurrentColorScheme
@@ -61,60 +57,56 @@ import com.kedokato.lession6.R
 import com.kedokato.lession6.component.Button
 import com.kedokato.lession6.component.DialogWithImage
 import com.kedokato.lession6.component.TextArea
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.receiveAsFlow
 
 
 @Composable
 fun ProfileView(
     viewModel: ProfileViewModel = viewModel(),
     isEditMode: Boolean = false,
-    onEditModeChange: (Boolean) -> Unit = {},
     isDarkTheme: Boolean = false,
     modifier: Modifier
 ) {
-    val colorScheme = getCurrentColorScheme()
     val state by viewModel.state.collectAsState()
 
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        viewModel.onAvatarSelected(uri)
+    }
+
+
+    LaunchedEffect(Unit) {
+        viewModel.openGalleryEvent.collect {
+            launcher.launch(arrayOf("image/*"))
+        }
+    }
+
+
+
     ProfileContent(
-        isEditMode = isEditMode,
-        onEditModeChange = onEditModeChange,
+        isEditMode = state.isSubmitVisible,
         isDarkTheme = isDarkTheme,
         modifier,
-        state = state
+        state = state,
+        viewModel = viewModel
+
     )
 }
 
 @Composable
 fun ProfileContent(
     isEditMode: Boolean = false,
-    onEditModeChange: (Boolean) -> Unit = {},
     isDarkTheme: Boolean = false,
     modifier: Modifier,
-    state: ProfileState
+    state: ProfileState,
+    viewModel: ProfileViewModel
 ) {
     val focusManager = LocalFocusManager.current
-    val colorScheme = getCurrentColorScheme(isDarkTheme)
+    val colorScheme = getCurrentColorScheme()
 
-//    var name by remember { mutableStateOf("") }
-//    var phone by remember { mutableStateOf("") }
-//    var university by remember { mutableStateOf("") }
-//    var describe by remember { mutableStateOf("") }
-//
-//    var nameError by remember { mutableStateOf<String?>(null) }
-//    var phoneError by remember { mutableStateOf<String?>(null) }
-//    var universityError by remember { mutableStateOf<String?>(null) }
-
-    val showDialog = remember { mutableStateOf(false) }
-    val painter = painterResource(id = R.drawable.succes)
-
-    val context = LocalContext.current
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
-
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
-    ) { uri: Uri? ->
-        imageUri = uri
-    }
 
 
     Column(
@@ -134,7 +126,7 @@ fun ProfileContent(
             title = "Profile",
             modifier = modifier,
             isEdit = isEditMode,
-            onIconClick = { onEditModeChange(!isEditMode) },
+            onIconClick = { viewModel.processIntent(ProflieIntent.isEdit) },
             onThemeToggle = { /* Handle theme toggle */ },
             isDarkTheme = isDarkTheme
         )
@@ -142,9 +134,9 @@ fun ProfileContent(
         AvatarImage(
             modifier = modifier,
             colorScheme = colorScheme,
-            imageUri = imageUri,
+            imageUri = state.avatarUrl,
             onClickCamera = {
-                launcher.launch(arrayOf("image/*"))
+                viewModel.processIntent(ProflieIntent.ChangeAvatar)
 
             }
         )
@@ -154,50 +146,44 @@ fun ProfileContent(
         EditContainer(
             name = state.name,
             onNameChange = {
-
+                viewModel.processIntent(
+                    ProflieIntent.NameChanged(it)
+                )
             },
-            phone = phone,
-            onPhoneChange = { phone = it },
-            university = university,
-            onUniversityChange = { university = it },
-            describe = describe,
-            onDescribeChange = { describe = it },
-            nameError = nameError,
-            phoneError = phoneError,
-            universityError = universityError,
-            isEnale = isEditMode,
+            phone = state.phone,
+            onPhoneChange = { viewModel.processIntent(ProflieIntent.PhoneChanged(it)) },
+            university = state.university,
+            onUniversityChange = { viewModel.processIntent(ProflieIntent.UniversityChanged(it)) },
+            describe = state.description,
+            onDescribeChange = { viewModel.processIntent(ProflieIntent.DescriptionChanged(it)) },
+            nameError = state.nameError,
+            phoneError = state.phone,
+            universityError = state.universityError,
+            isEnable = state.inputEnable,
             colorScheme = colorScheme
         )
 
-        if (isEditMode) {
-          Button(
-              text = "Submit",
-              modifier = Modifier.fillMaxWidth(0.3f),
-              onClick ={
-                  nameError =
-                        if (name.isBlank() || !name.matches(Regex("^[\\p{L} ]*\$"))) "Name is invalid" else null
-                    phoneError =
-                        if (!phone.matches(Regex("^\\d{10}$"))) "Phone is invalid" else null
-                    universityError =
-                        if (university.isBlank() || !university.matches(Regex("^[\\p{L} ]*\$"))) "University is invalid" else null
-
-                    if (nameError == null && phoneError == null && universityError == null) {
-                        showDialog.value = true
-                        onEditModeChange(false)
-                    }
-              })
+        if (state.isEdit) {
+            Button(
+                text = "Submit",
+                modifier = Modifier.fillMaxWidth(0.3f),
+                onClick = {
+                    viewModel.processIntent(ProflieIntent.Submit)
+                        // thay doi state cho dialog
+                    viewModel.processIntent(ProflieIntent.ShowDialog)
+                })
         }
 
-        if (showDialog.value) {
+        if (state.showDialog) {
             DialogWithImage(
-                onDismissRequest = { showDialog.value = false },
-                painter = painter,
+                onDismissRequest = { viewModel.processIntent(ProflieIntent.ShowDialog) },
+                painter = painterResource(R.drawable.succes),
                 imageDescription = "Avatar Image",
                 colorScheme = colorScheme,
             )
 
             AnimatedVisibility(
-                visible = showDialog.value,
+                visible = state.showDialog,
                 enter = fadeIn(
                     animationSpec = tween(300)
                 ) + scaleIn(
@@ -212,17 +198,10 @@ fun ProfileContent(
                 )
             ) {
                 DialogWithImage(
-                    onDismissRequest = { showDialog.value = false },
-                    painter = painter,
+                    onDismissRequest = {viewModel.processIntent(ProflieIntent.ShowDialog) },
+                    painter = painterResource(R.drawable.succes),
                     imageDescription = "Avatar Image"
                 )
-            }
-
-            LaunchedEffect(showDialog.value) {
-                if (showDialog.value) {
-                    delay(2000)
-                    showDialog.value = false
-                }
             }
         }
     }
@@ -238,7 +217,7 @@ fun ProfileTopBar(
     onThemeToggle: () -> Unit = {},
     isDarkTheme: Boolean = false,
 ) {
-    val colorScheme = getCurrentColorScheme(isDarkTheme)
+    val colorScheme = getCurrentColorScheme()
     CenterAlignedTopAppBar(
         title = {
             Text(
@@ -280,13 +259,14 @@ fun ProfileTopBar(
         }
     )
 }
+
 @Composable
 fun LabelForTextField(
-    lable: String,
+    label: String,
     colorScheme: ColorScheme
 ) {
     Text(
-        text = lable,
+        text = label,
         color = colorScheme.primary,
         modifier = Modifier.padding(bottom = 4.dp)
     )
@@ -299,7 +279,7 @@ fun AvatarImage(
     imageUri: Uri? = null,
     onClickCamera: () -> Unit = {}
 ) {
-    Box(){
+    Box() {
         if (imageUri != null) {
             Image(
                 painter = rememberAsyncImagePainter(imageUri),
@@ -338,7 +318,7 @@ fun AvatarImage(
                     color = colorScheme.surface,
                     shape = RoundedCornerShape(20.dp)
                 )
-        ){
+        ) {
             Icon(
                 painter = painterResource(id = R.drawable.camera),
                 contentDescription = "Camera Icon",
@@ -372,7 +352,7 @@ fun EditContainer(
     nameError: String? = null,
     phoneError: String? = null,
     universityError: String? = null,
-    isEnale: Boolean = true,
+    isEnable: Boolean = true,
     colorScheme: ColorScheme
 ) {
     Column(modifier = Modifier.padding(16.dp)) {
@@ -389,7 +369,7 @@ fun EditContainer(
                     modifier = Modifier.fillMaxWidth(),
                     line = 1,
                     isError = nameError != null,
-                    isEnable = isEnale,
+                    isEnable = isEnable,
                     colorScheme = colorScheme
                 )
                 if (nameError != null) {
@@ -411,7 +391,7 @@ fun EditContainer(
                     modifier = Modifier.fillMaxWidth(),
                     line = 1,
                     isError = phoneError != null,
-                    isEnable = isEnale,
+                    isEnable = isEnable,
                     colorScheme = colorScheme
                 )
                 if (phoneError != null) {
@@ -435,7 +415,7 @@ fun EditContainer(
             modifier = Modifier.fillMaxWidth(),
             line = 1,
             isError = universityError != null,
-            isEnable = isEnale,
+            isEnable = isEnable,
             colorScheme = colorScheme
         )
         if (universityError != null) {
@@ -458,7 +438,7 @@ fun EditContainer(
             line = 5,
             height = 160,
             singleLine = false,
-            isEnable = isEnale,
+            isEnable = isEnable,
             colorScheme = colorScheme
         )
     }
@@ -467,10 +447,25 @@ fun EditContainer(
 @Preview(showBackground = true)
 @Composable
 fun PreviewProfileContent() {
+    val viewModel: ProfileViewModel = viewModel()
     ProfileContent(
         isEditMode = true,
-        onEditModeChange = {},
         isDarkTheme = false,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        state = ProfileState(
+            name = "John Doe",
+            phone = "1234567890",
+            university = "Example University",
+            description = "A short description about John Doe.",
+            nameError = null,
+            phoneError = null,
+            universityError = null,
+            isSubmitVisible = true,
+            inputEnable = true,
+            isEdit = true,
+            avatarUrl = null,
+            showDialog = false
+        ),
+        viewModel = viewModel
     )
 }
