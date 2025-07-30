@@ -1,5 +1,6 @@
 package com.kedokato.lession6.view.playlist
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -29,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -46,13 +48,35 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kedokato.lession6.R
 import com.kedokato.lession6.model.Song
+import com.kedokato.lession6.view.playlist.component.PlayGridItem
+import com.kedokato.lession6.view.playlist.component.PlayListItem
+import com.kedokato.lession6.view.profile.ProfileViewModel
 import kotlin.math.roundToInt
+
+
+
+
+@Composable
+fun MyPlayListScreen(
+    viewModel: PlaylistViewModel = viewModel()
+) {
+
+    // Observe the state
+    val state by viewModel.state.collectAsState()
+
+    PlayListScreen(
+        typeDisplay = state.displayType,
+        isSort = state.isSorting,
+        viewModel = viewModel
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun PlayListScreen(typeDisplay: Boolean, isSort: Boolean = false) {
+fun PlayListScreen(typeDisplay: Boolean, isSort: Boolean = false, viewModel: PlaylistViewModel) {
     var songs by remember { mutableStateOf(listSong.toMutableList()) }
     var draggedIndex by remember { mutableStateOf(-1) }
     var dragOffset by remember { mutableStateOf(Offset.Zero) }
@@ -66,6 +90,16 @@ fun PlayListScreen(typeDisplay: Boolean, isSort: Boolean = false) {
                 .padding(top = 16.dp)
                 .padding(horizontal = 8.dp)
         ) {
+            item {
+                PlayListTopBar(
+                    typeDisplay = typeDisplay,
+                    onToggleDisplay = { /* Toggle display logic */ },
+                    isSort = isSort,
+                    onSort = { /* Sort logic */ },
+                    onCancelSort = { draggedIndex = -1 }
+                )
+            }
+
             itemsIndexed(
                 items = songs,
                 key = { _, song -> song.id }
@@ -193,165 +227,6 @@ fun PlayListTopBar(
 }
 
 @Composable
-fun PlayListItem(
-    song: Song,
-    isSort: Boolean,
-    isDragging: Boolean = false,
-    dragOffset: Offset = Offset.Zero,
-    onDragStart: () -> Unit = {},
-    onDragEnd: () -> Unit = {},
-    onDrag: (Offset) -> Unit = {},
-    modifier: Modifier = Modifier
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .offset {
-                if (isDragging) {
-                    IntOffset(0, dragOffset.y.roundToInt())
-                } else {
-                    IntOffset.Zero
-                }
-            }
-            .zIndex(if (isDragging) 1f else 0f)
-            .background(if (isDragging) Color.DarkGray else Color.Transparent)
-    ) {
-        Image(
-            painter = painterResource(id = song.image),
-            contentDescription = "Song Image",
-            modifier = Modifier
-                .size(64.dp)
-                .padding(8.dp)
-        )
-        Column {
-            Text(
-                text = song.name,
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.White,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-            Text(
-                text = song.artist,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray,
-                modifier = Modifier.padding(bottom = 4.dp)
-            )
-        }
-        Text(
-            text = song.duration,
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.White,
-            modifier = Modifier
-                .padding(8.dp)
-                .weight(1f)
-                .align(Alignment.CenterVertically),
-            textAlign = TextAlign.End
-        )
-        Image(
-            painter = painterResource(id = R.drawable.dotx3),
-            contentDescription = "More Options",
-            modifier = Modifier
-                .padding(8.dp)
-                .size(24.dp)
-                .align(Alignment.CenterVertically)
-                .clickable {
-                    expanded = true
-                },
-            colorFilter = ColorFilter.tint(Color.White)
-        )
-
-        Menu(
-            expanded = expanded,
-            onDismiss = { expanded = false },
-            song = song
-        )
-
-        if (isSort) {
-            Image(
-                painter = painterResource(id = R.drawable.drag),
-                contentDescription = "Drag Handle",
-                modifier = Modifier
-                    .size(24.dp)
-                    .align(Alignment.CenterVertically)
-                    .padding(end = 8.dp)
-                    .pointerInput(Unit) {
-                        detectDragGestures(
-                            onDragStart = { onDragStart() },
-                            onDragEnd = { onDragEnd() },
-                            onDrag = { change, dragAmount ->
-                                onDrag(dragAmount)
-                            }
-                        )
-                    }
-            )
-        }
-    }
-}
-
-@Composable
-fun PlayGridItem(song: Song) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        var expanded by remember { mutableStateOf(false) }
-        Box {
-            Image(
-                painter = painterResource(id = song.image),
-                contentDescription = "Song Image",
-                modifier = Modifier
-                    .size(150.dp)
-                    .padding(8.dp)
-                    .background(Color.Gray, shape = RoundedCornerShape(8.dp))
-            )
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(14.dp)
-                    .background(Color.Black.copy(alpha = 0.5f), shape = RoundedCornerShape(6.dp))
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.dotx3),
-                    contentDescription = "Dot x3 Icon",
-                    modifier = Modifier
-                        .size(24.dp)
-                        .padding(4.dp)
-                        .clickable { expanded = true },
-                    colorFilter = ColorFilter.tint(Color.White)
-                )
-            }
-
-            Menu(
-                expanded = expanded,
-                onDismiss = { expanded = false },
-                song = song
-            )
-        }
-
-        Text(
-            text = song.name,
-            style = MaterialTheme.typography.bodyLarge,
-            color = Color.White,
-            modifier = Modifier.padding(horizontal = 8.dp)
-        )
-        Text(
-            text = song.artist,
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray,
-            modifier = Modifier.padding(horizontal = 8.dp)
-        )
-
-        Text(
-            text = song.duration,
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.White,
-            modifier = Modifier.padding(horizontal = 8.dp),
-        )
-    }
-}
-
-@Composable
 fun Menu(expanded: Boolean, onDismiss: () -> Unit, song: Song) {
     DropdownMenu(
         expanded = expanded,
@@ -390,17 +265,11 @@ fun Menu(expanded: Boolean, onDismiss: () -> Unit, song: Song) {
     }
 }
 
+@SuppressLint("ViewModelConstructorInComposable")
 @Preview
 @Composable
 fun PlayListScreenPreview() {
-    PlayListScreen(typeDisplay = false, isSort = true)
-}
-
-@Preview
-@Composable
-fun PlayListTopBarPreview() {
-    PlayListTopBar(typeDisplay = true, onToggleDisplay = {}, isSort = true, onSort = {},
-        onCancelSort = {})
+    PlayListScreen(typeDisplay = false, isSort = true, viewModel = PlaylistViewModel())
 }
 
 val listSong = mutableStateListOf<Song>(

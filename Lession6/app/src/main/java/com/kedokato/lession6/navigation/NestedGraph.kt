@@ -32,6 +32,7 @@ import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.view.home.HomeScreen
+import com.kedokato.lession6.view.playlist.MyPlayListScreen
 import com.kedokato.lession6.view.playlist.PlayListScreen
 
 
@@ -121,10 +122,7 @@ fun NestedGraph(onProfileClick: () -> Unit) {
                 }
 
                 entry<BottomBarScreen.Playlist> {
-                    PlayListScreen(
-                        typeDisplay = true,
-                        isSort = false
-                    )
+                    MyPlayListScreen()
                 }
             }
         )
