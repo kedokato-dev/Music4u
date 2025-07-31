@@ -17,13 +17,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.kedokato.lession6.R
 import com.kedokato.lession6.model.Song
 import com.kedokato.lession6.view.playlist.Menu
+import kotlin.math.max
 
 
 @Composable
@@ -33,13 +37,16 @@ fun PlayGridItem(song: Song) {
     ) {
         var expanded by remember { mutableStateOf(false) }
         Box {
-            Image(
-                painter = painterResource(id = song.image),
-                contentDescription = "Song Image",
+            AsyncImage(
+                model = song.image,
+                contentDescription = song.name,
+                contentScale = ContentScale.Crop,
+                placeholder = painterResource(id = R.drawable.img_extra),
+                error = painterResource(id = R.drawable.img4),
                 modifier = Modifier
                     .size(150.dp)
                     .padding(8.dp)
-                    .background(Color.Gray, shape = RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(8.dp))
             )
             Box(
                 modifier = Modifier
@@ -67,12 +74,14 @@ fun PlayGridItem(song: Song) {
 
         Text(
             text = song.name,
+            maxLines = 1,
             style = MaterialTheme.typography.bodyLarge,
             color = Color.White,
             modifier = Modifier.padding(horizontal = 8.dp)
         )
         Text(
             text = song.artist,
+            maxLines = 1,
             style = MaterialTheme.typography.bodyMedium,
             color = Color.Gray,
             modifier = Modifier.padding(horizontal = 8.dp)

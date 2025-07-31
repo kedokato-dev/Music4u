@@ -1,25 +1,24 @@
 package com.kedokato.lession6.view.playlist
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -32,52 +31,85 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kedokato.lession6.R
 import com.kedokato.lession6.model.Song
+import com.kedokato.lession6.repository.PlaylistRepo
+import com.kedokato.lession6.usecase.LoadSongsUseCase
 import com.kedokato.lession6.view.playlist.component.PlayGridItem
 import com.kedokato.lession6.view.playlist.component.PlayListItem
-import com.kedokato.lession6.view.profile.ProfileViewModel
-import kotlin.math.roundToInt
-
-
-
 
 @Composable
 fun MyPlayListScreen(
-    viewModel: PlaylistViewModel = viewModel()
+    context: Context = LocalContext.current
 ) {
+    val viewModel: PlaylistViewModel = viewModel(
+        factory = PlaylistViewModelFactory(context)
+    )
 
-    // Observe the state
+
     val state by viewModel.state.collectAsState()
+
+
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted ->
+            if (granted) {
+                viewModel.processIntent(PlaylistIntent.LoadSongs)
+            }
+        }
+    )
+
+    LaunchedEffect(Unit) {
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_AUDIO
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+
+        if (ContextCompat.checkSelfPermission(context, permission)
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            viewModel.processIntent(PlaylistIntent.LoadSongs)
+        } else {
+            permissionLauncher.launch(permission)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.processIntent(PlaylistIntent.LoadSongs)
+    }
 
     PlayListScreen(
         typeDisplay = state.displayType,
         isSort = state.isSorting,
-        viewModel = viewModel
+        viewModel = viewModel,
+        listSong = state.songs
     )
+
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun PlayListScreen(typeDisplay: Boolean, isSort: Boolean = false, viewModel: PlaylistViewModel) {
-    var songs by remember { mutableStateOf(listSong.toMutableList()) }
+fun PlayListScreen(
+    typeDisplay: Boolean,
+    isSort: Boolean = false,
+    viewModel: PlaylistViewModel,
+    listSong: List<Song>
+) {
     var draggedIndex by remember { mutableStateOf(-1) }
     var dragOffset by remember { mutableStateOf(Offset.Zero) }
     val listState = rememberLazyListState()
@@ -93,7 +125,9 @@ fun PlayListScreen(typeDisplay: Boolean, isSort: Boolean = false, viewModel: Pla
             item {
                 PlayListTopBar(
                     typeDisplay = typeDisplay,
-                    onToggleDisplay = { /* Toggle display logic */ },
+                    onToggleDisplay = {
+                        viewModel.processIntent(PlaylistIntent.DisplayType(typeDisplay))
+                    },
                     isSort = isSort,
                     onSort = { /* Sort logic */ },
                     onCancelSort = { draggedIndex = -1 }
@@ -101,7 +135,7 @@ fun PlayListScreen(typeDisplay: Boolean, isSort: Boolean = false, viewModel: Pla
             }
 
             itemsIndexed(
-                items = songs,
+                items = listSong,
                 key = { _, song -> song.id }
             ) { index, song ->
                 val isDragging = draggedIndex == index
@@ -111,49 +145,42 @@ fun PlayListScreen(typeDisplay: Boolean, isSort: Boolean = false, viewModel: Pla
                     isDragging = isDragging,
                     dragOffset = if (isDragging) dragOffset else Offset.Zero,
                     onDragStart = {
-                        if (isSort) {
-                            draggedIndex = index
-                        }
+
                     },
                     onDragEnd = {
-                        draggedIndex = -1
-                        dragOffset = Offset.Zero
+
                     },
-                    onDrag = { offset ->
-                        dragOffset += offset
-
-                        // Calculate target index based on drag position
-                        val itemHeight = 80.dp.value * 3 // Approximate item height in pixels
-                        val targetIndex = (index + (dragOffset.y / itemHeight).roundToInt())
-                            .coerceIn(0, songs.size - 1)
-
-                        if (targetIndex != index && targetIndex in songs.indices) {
-                            // Perform the reorder
-                            val draggedItem = songs[index]
-                            songs = songs.toMutableList().apply {
-                                removeAt(index)
-                                add(targetIndex, draggedItem)
-                            }
-                            draggedIndex = targetIndex
-                            dragOffset = Offset.Zero
-                        }
+                    onDrag = {
                     },
                     modifier = Modifier.animateItem()
                 )
             }
         }
     } else {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier
-                .background(Color.Black)
-                .padding(top = 16.dp)
-                .padding(horizontal = 8.dp)
-        ) {
-            items(listSong.size) { index ->
-                val song = listSong[index]
-                PlayGridItem(song)
-            }
+            Column(
+                modifier = Modifier
+                    .background(Color.Black)
+                    .padding(top = 16.dp)
+                    .padding(horizontal = 8.dp)
+            ) {
+                PlayListTopBar(
+                    typeDisplay = typeDisplay,
+                    onToggleDisplay = {
+                        viewModel.processIntent(PlaylistIntent.DisplayType(typeDisplay))
+                    },
+                    isSort = isSort,
+                    onSort = { /* Sort logic */ },
+                    onCancelSort = { draggedIndex = -1 }
+                )
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(listSong.size) { index ->
+                        val song = listSong[index]
+                        PlayGridItem(song)
+                    }
+                }
         }
     }
 }
@@ -245,8 +272,8 @@ fun Menu(expanded: Boolean, onDismiss: () -> Unit, song: Song) {
                 )
             },
             onClick = {
-                onDismiss()
-                listSong.remove(song)
+//                onDismiss()
+//                songs.remove(song)
             }
         )
         DropdownMenuItem(
@@ -265,32 +292,31 @@ fun Menu(expanded: Boolean, onDismiss: () -> Unit, song: Song) {
     }
 }
 
-@SuppressLint("ViewModelConstructorInComposable")
-@Preview
-@Composable
-fun PlayListScreenPreview() {
-    PlayListScreen(typeDisplay = false, isSort = true, viewModel = PlaylistViewModel())
+class FakeSongRepository : PlaylistRepo {
+    override suspend fun getSongsFromStorage(): List<Song> {
+        TODO("Not yet implemented")
+    }
 }
 
-val listSong = mutableStateListOf<Song>(
-    Song(1, "Grainy days", "moody", "4:30", R.drawable.img1),
-    Song(2, "Coffee", "Kainbeats", "3:45", R.drawable.img2),
-    Song(3, "raindrops", "Rainyxxy", "2:50", R.drawable.img3),
-    Song(4, "Tokyo", "SmYang", "5:15", R.drawable.img4),
-    Song(5, "Lullaby", "iamfinenow", "3:20", R.drawable.img5),
-    Song(6, "Midnight", "Kainbeats", "4:10", R.drawable.img1),
-    Song(7, "Sunset", "moody", "3:55", R.drawable.img2),
-    Song(8, "Dreamscape", "Rainyxxy", "4:05", R.drawable.img3),
-    Song(9, "Whispers", "SmYang", "3:30", R.drawable.img4),
-    Song(10, "Echoes", "iamfinenow", "4:25", R.drawable.img5),
-    Song(11, "Shape of you", "moody", "4:30", R.drawable.img_extra),
-    Song(12, "Coffee", "Kainbeats", "3:45", R.drawable.img1),
-    Song(13, "raindrops", "Rainyxxy", "2:50", R.drawable.img2),
-    Song(14, "Tokyo", "SmYang", "5:15", R.drawable.img3),
-    Song(15, "Lullaby", "iamfinenow", "3:20", R.drawable.img4),
-    Song(16, "Midnight", "Kainbeats", "4:10", R.drawable.img5),
-    Song(17, "Sunset", "moody", "3:55", R.drawable.img2),
-    Song(18, "Dreamscape", "Rainyxxy", "4:05", R.drawable.img1),
-    Song(19, "Whispers", "SmYang", "3:30", R.drawable.img5),
-    Song(20, "Echoes", "iamfinenow", "4:25", R.drawable.img_extra),
-)
+@SuppressLint("ViewModelConstructorInComposable")
+@Preview(showBackground = true)
+@Composable
+fun PlayListScreenPreview() {
+    val dummySongs = List(10) { index ->
+        Song(
+            id = index.toLong(),
+            name = "Chỉ còn ta và ta giữa trời đêm đầy sao $index",
+            artist = "Chỉ còn ta và ta giữa trời đêm đầy sao",
+            duration = "3:00",
+            image = null,
+            uri = null
+        )
+    }
+    val fakeViewModel = PlaylistViewModel(LoadSongsUseCase(FakeSongRepository()))
+    PlayListScreen(
+        typeDisplay = true,
+        isSort = false,
+        viewModel = fakeViewModel,
+        listSong = dummySongs
+    )
+}
