@@ -10,7 +10,7 @@ import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.kedokato.lession6.view.home.HomeScreen
 import com.kedokato.lession6.view.login.LoginScreen
-import com.kedokato.lession6.view.playlist.PlayListScreen
+import com.kedokato.lession6.view.playlist.MyPlayListScreen
 import com.kedokato.lession6.view.profile.ProfileView
 import com.kedokato.lession6.view.signup.SignUpScreen
 import com.kedokato.lession6.view.splash.SplashScreen
@@ -87,11 +87,6 @@ fun AppNavigation(
             entry<RememberScreen.ProfileScreen> {
                 ProfileView(
                     isEditMode = false,
-                    onEditModeChange = {
-                        backStack.add(
-                            RememberScreen.HomeScreen
-                        )
-                    },
                     isDarkTheme = true,
                     modifier = modifier,
 
@@ -99,9 +94,7 @@ fun AppNavigation(
             }
 
             entry<RememberScreen.PlaylistScreen> {
-                PlayListScreen(
-                    typeDisplay = true,
-                    isSort = false
+                MyPlayListScreen(
                 )
             }
 
