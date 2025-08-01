@@ -1,6 +1,7 @@
 package com.kedokato.lession6.navigation
 
 import androidx.compose.runtime.saveable.Saver
+import androidx.compose.ui.graphics.Color
 import androidx.navigation3.runtime.NavKey
 import com.kedokato.lession6.R
 import kotlinx.serialization.Serializable
@@ -8,8 +9,8 @@ import kotlinx.serialization.Serializable
 
 val bottomBarItems = listOf<BottomBarScreen>(
     BottomBarScreen.Home,
+    BottomBarScreen.Library,
     BottomBarScreen.Playlist,
-    BottomBarScreen.Library
 )
 
 @Serializable
@@ -24,16 +25,18 @@ sealed class BottomBarScreen(
     )
 
     @Serializable
-    data object Playlist : BottomBarScreen(
-        icon = R.drawable.play_list,
-        title = "Playlist"
+    data object Library : BottomBarScreen(
+        icon = R.drawable.libraryy,
+        title = "Library"
     )
 
     @Serializable
-    data object Library : BottomBarScreen(
-        icon = R.drawable.library,
-        title = "Library"
+    data object Playlist : BottomBarScreen(
+        icon = R.drawable.playlist,
+        title = "Playlist"
     )
+
+
 }
 
 val BottomBarScreenSaver = Saver<BottomBarScreen, String>(
@@ -41,8 +44,8 @@ val BottomBarScreenSaver = Saver<BottomBarScreen, String>(
     restore = {
         when (it) {
             BottomBarScreen.Home::class.simpleName -> BottomBarScreen.Home
-            BottomBarScreen.Playlist::class.simpleName -> BottomBarScreen.Playlist
             BottomBarScreen.Library::class.simpleName -> BottomBarScreen.Library
+            BottomBarScreen.Playlist::class.simpleName -> BottomBarScreen.Playlist
             else -> BottomBarScreen.Home
         }
     }

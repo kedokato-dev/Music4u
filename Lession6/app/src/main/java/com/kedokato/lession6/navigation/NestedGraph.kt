@@ -1,8 +1,10 @@
 package com.kedokato.lession6.navigation
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -32,6 +34,7 @@ import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.view.home.HomeScreen
+import com.kedokato.lession6.view.library.LibraryScreen
 import com.kedokato.lession6.view.playlist.MyPlayListScreen
 import com.kedokato.lession6.view.playlist.PlayListScreen
 
@@ -52,8 +55,8 @@ fun NestedGraph(onProfileClick: () -> Unit) {
     Scaffold(
         bottomBar = {
             NavigationBar(
-                containerColor = colorScheme.primary,
-                modifier = Modifier.graphicsLayer{
+                containerColor = colorScheme.background,
+                modifier = Modifier.graphicsLayer {
                     shape = RoundedCornerShape(
                         topStart = 20.dp,
                         topEnd = 20.dp
@@ -68,7 +71,8 @@ fun NestedGraph(onProfileClick: () -> Unit) {
                         icon = {
                             Icon(
                                 painter = painterResource(destination.icon),
-                                contentDescription = "$destination icon"
+                                contentDescription = "$destination icon",
+                                tint = if (currentBottomBarScreen == destination) colorScheme.primary else colorScheme.onBackground
                             )
                         },
                         alwaysShowLabel = false,
@@ -83,49 +87,49 @@ fun NestedGraph(onProfileClick: () -> Unit) {
                             }
                         },
                         colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = colorScheme.background,
-                                selectedTextColor = colorScheme.background,
-                                indicatorColor =  Color.Transparent,
-                                unselectedIconColor = colorScheme.onBackground,
-                                unselectedTextColor = colorScheme.onBackground,
-                            ),
-                        )
+                            selectedIconColor = colorScheme.onBackground,
+                            selectedTextColor = colorScheme.primary,
+                            indicatorColor = Color.Transparent,
+                            unselectedIconColor = colorScheme.onBackground,
+                            unselectedTextColor = colorScheme.onBackground,
+                        ),
+                    )
                 }
 
             }
         }
-    ) {
-        NavDisplay(
-            backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
-            entryDecorators = listOf(
-                rememberSavedStateNavEntryDecorator(),
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier.padding(innerPadding)
+        ){
+            NavDisplay(
+                backStack = backStack,
+                onBack = { backStack.removeLastOrNull() },
+                entryDecorators = listOf(
+                    rememberSavedStateNavEntryDecorator(),
 //                rememberViewModelStoreNavEntryDecorator()
-            ),
-            entryProvider = entryProvider {
-                entry<BottomBarScreen.Home> {
-                    HomeScreen(
-                        modifier = Modifier,
-                        onProfileClick = onProfileClick // call back function
-                    )
-                }
-                entry<BottomBarScreen.Library> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Library",
-                            fontSize = MaterialTheme.typography.titleLarge.fontSize
+                ),
+                entryProvider = entryProvider {
+                    entry<BottomBarScreen.Home> {
+                        HomeScreen(
+                            modifier = Modifier,
+                            onProfileClick = onProfileClick // call back function
                         )
                     }
-                }
+                    entry<BottomBarScreen.Library> {
+                        LibraryScreen(
+                            modifier = Modifier.fillMaxSize()
 
-                entry<BottomBarScreen.Playlist> {
-                    MyPlayListScreen()
+                        )
+                    }
+
+
+                    entry<BottomBarScreen.Playlist> {
+                        MyPlayListScreen()
+                    }
                 }
-            }
-        )
+            )
+        }
     }
 }
 

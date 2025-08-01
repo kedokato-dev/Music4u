@@ -23,7 +23,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        // Làm thanh điều hướng trong suốt
+
         window.navigationBarColor = Color.Transparent.toArgb()
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightNavigationBars =
             true

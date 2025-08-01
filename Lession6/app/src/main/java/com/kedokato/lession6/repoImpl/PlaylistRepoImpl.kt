@@ -2,19 +2,37 @@ package com.kedokato.lession6.repoImpl
 
 import android.content.ContentResolver
 import android.content.ContentUris
+import android.content.Context
 import android.media.MediaMetadataRetriever
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
+import com.kedokato.lession6.database.DAO.PlaylistDao
 import com.kedokato.lession6.model.Song
 import com.kedokato.lession6.repository.PlaylistRepo
+import java.io.File
 
 class PlaylistRepoImpl(
-    private val contentResolver: ContentResolver
+    private val contentResolver: ContentResolver,
 ) : PlaylistRepo {
 
     override suspend fun getSongsFromStorage(): List<Song> {
         return getAllMp3Files( contentResolver)
+    }
+
+
+    override suspend fun getAllPlaylists(): List<Long> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun insertSong(song: Song): List<Song> {
+//        val listSong = mutableListOf<Song>()
+//        if (song.id == 0L) {
+//          listSong.add(song)
+//        }
+//        return listSong
+        TODO("Not yet implemented")
     }
 
     private fun getAllMp3Files(
@@ -68,6 +86,7 @@ class PlaylistRepoImpl(
                             uri = audioUri
                         )
                     )
+
                 } while (cursor.moveToNext())
             } else {
                 Log.e("PlaylistRepo", "Query returned empty cursor")
@@ -94,5 +113,7 @@ class PlaylistRepoImpl(
             retriever.release()
         }
     }
+
+
 
 }

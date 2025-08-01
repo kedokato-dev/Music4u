@@ -11,6 +11,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -203,6 +204,7 @@ fun PlayListTopBar(
             navigationIconContentColor = Color.White,
             scrolledContainerColor = Color.Black,
         ),
+        windowInsets = WindowInsets(0, 0, 0, 0),
         navigationIcon = {
             if (isSort) {
                 Icon(
@@ -294,6 +296,14 @@ fun Menu(expanded: Boolean, onDismiss: () -> Unit, song: Song) {
 
 class FakeSongRepository : PlaylistRepo {
     override suspend fun getSongsFromStorage(): List<Song> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getAllPlaylists(): List<Long> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun insertSong(song: Song): List<Song> {
         TODO("Not yet implemented")
     }
 }

@@ -61,14 +61,15 @@ coil2-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "co
 #Room db
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
-room-paging = { module = "androidx.room:room-paging", version.ref = "room" }
 
 # Nếu bạn dùng Kotlin Symbol Processing (KSP) thay cho kapt:
 room-compiler-ksp = { module = "androidx.room:room-compiler", version.ref = "room" }
 
 # Nếu cần coroutines (gần như luôn cần)
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+
+compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
+
 
 #Koin
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }

@@ -40,6 +40,7 @@ class PlaylistViewModel(
                         song.copy(artist = shortenTitle(song.artist))
                         song.copy(duration = formatDuration(song.duration.toLong()))
                     }
+                    Log.d("PlaylistViewModel", "Loaded songs: ${processedSongs.size}")
                     _state.update { it.copy(songs = processedSongs) }
                 }
             }
