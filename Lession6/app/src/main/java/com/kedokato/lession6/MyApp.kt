@@ -1,7 +1,9 @@
 package com.kedokato.lession6
 
 import android.app.Application
+import com.kedokato.lession6.database.AppDatabase
 import com.kedokato.lession6.di.appModule
+import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext.startKoin
 
@@ -13,5 +15,6 @@ class MyApp : Application() {
             androidContext(this@MyApp)
             modules(appModule)
         }
+
     }
 }

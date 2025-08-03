@@ -10,7 +10,8 @@ import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.kedokato.lession6.view.home.HomeScreen
 import com.kedokato.lession6.view.login.LoginScreen
-import com.kedokato.lession6.view.playlist.MyPlayListScreen
+import com.kedokato.lession6.view.playlist.myplaylist.MyPlaylistScreen
+import com.kedokato.lession6.view.playlist.playlist.MyPlaylistDetailScreen
 import com.kedokato.lession6.view.profile.ProfileView
 import com.kedokato.lession6.view.signup.SignUpScreen
 import com.kedokato.lession6.view.splash.SplashScreen
@@ -20,10 +21,11 @@ fun AppNavigation(
     modifier: Modifier = Modifier,
 ) {
     val backStack = rememberNavBackStack<RememberScreen>(
-        RememberScreen.LoginScreen(
-            username = "",
-            password = ""
-        )
+//        RememberScreen.LoginScreen(
+//            username = "",
+//            password = ""
+//        )
+        RememberScreen.NestedGraph
     )
 
     NavDisplay(
@@ -94,8 +96,7 @@ fun AppNavigation(
             }
 
             entry<RememberScreen.PlaylistScreen> {
-                MyPlayListScreen(
-                )
+                MyPlaylistScreen()
             }
 
             entry<RememberScreen.NestedGraph> {

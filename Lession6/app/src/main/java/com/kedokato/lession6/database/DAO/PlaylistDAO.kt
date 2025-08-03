@@ -9,7 +9,6 @@ import com.kedokato.lession6.database.Entity.PlaylistEntity
 import com.kedokato.lession6.database.Entity.PlaylistSongCrossRef
 import com.kedokato.lession6.database.Entity.PlaylistWithSongs
 import com.kedokato.lession6.database.Entity.SongEntity
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PlaylistDao {
@@ -17,12 +16,32 @@ interface PlaylistDao {
     suspend fun insertPlaylist(playlist: PlaylistEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertSong(song: SongEntity)
+    suspend fun insertSongs(songs: List<SongEntity>)
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertSongToPlaylist(crossRef: PlaylistSongCrossRef)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPlaylistSongCrossRef(crossRef: PlaylistSongCrossRef)
 
     @Transaction
     @Query("SELECT * FROM playlist")
-    fun getAllPlaylists(): Flow<List<PlaylistWithSongs>>
+    suspend fun getPlaylistsWithSongs(): List<PlaylistWithSongs>
+
+
+    @Transaction
+    suspend fun deletePlaylistCompletely(playlistId: Long) {
+        deletePlaylistSongRelations(playlistId)
+        removePlaylist(playlistId)
+    }
+
+    @Query("DELETE FROM playlist WHERE playlistId = :playlistId")
+    suspend fun removePlaylist(playlistId: Long)
+
+    @Query("DELETE FROM playlist_song WHERE playlistId = :playlistId")
+    suspend fun deletePlaylistSongRelations(playlistId: Long)
+
+   @Query("SELECT * FROM songs WHERE songId IN (SELECT songId FROM playlist_song WHERE playlistId = :playlistId)")
+    suspend fun loadSongsFromPlaylist(playlistId: Long): List<SongEntity>
+
+
+
+
 }

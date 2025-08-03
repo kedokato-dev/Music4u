@@ -9,111 +9,39 @@ import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
 import com.kedokato.lession6.database.DAO.PlaylistDao
+import com.kedokato.lession6.database.Entity.PlaylistEntity
+import com.kedokato.lession6.database.Entity.PlaylistSongCrossRef
+import com.kedokato.lession6.database.Entity.PlaylistWithSongs
+import com.kedokato.lession6.database.Entity.SongEntity
 import com.kedokato.lession6.model.Song
 import com.kedokato.lession6.repository.PlaylistRepo
 import java.io.File
 
-class PlaylistRepoImpl(
-    private val contentResolver: ContentResolver,
-) : PlaylistRepo {
+    class PlaylistRepoImpl(
+        private val dao: PlaylistDao
+    ) : PlaylistRepo {
 
-    override suspend fun getSongsFromStorage(): List<Song> {
-        return getAllMp3Files( contentResolver)
-    }
-
-
-    override suspend fun getAllPlaylists(): List<Long> {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun insertSong(song: Song): List<Song> {
-//        val listSong = mutableListOf<Song>()
-//        if (song.id == 0L) {
-//          listSong.add(song)
-//        }
-//        return listSong
-        TODO("Not yet implemented")
-    }
-
-    private fun getAllMp3Files(
-        contentResolver: ContentResolver
-    ): List<Song> {
-        val songs = mutableListOf<Song>()
-        val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
-        val projection = arrayOf(
-            MediaStore.Audio.Media._ID,
-            MediaStore.Audio.Media.TITLE,
-            MediaStore.Audio.Media.ARTIST,
-            MediaStore.Audio.Media.DURATION,
-            MediaStore.Audio.Media.MIME_TYPE
-        )
-
-        val sortOrder = "${MediaStore.Audio.Media.TITLE} ASC"
-
-        contentResolver.query(uri, projection, selection, null, sortOrder)?.use { cursor ->
-            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
-            val titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
-            val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
-            val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
-            val mimeTypeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.MIME_TYPE)
-
-            if (cursor.moveToFirst()) {
-                do {
-                    val mimeType = cursor.getString(mimeTypeColumn)
-                    Log.d("PlaylistRepo", "Found file with mimeType: $mimeType")
-
-                    if (mimeType != null && mimeType != "audio/mpeg") continue
-
-
-                    val id = cursor.getLong(idColumn)
-                    val title = cursor.getString(titleColumn) ?: "Unknown Title"
-                    val artist = cursor.getString(artistColumn) ?: "Unknown Artist"
-                    val duration = cursor.getLong(durationColumn)
-                    val audioUri = ContentUris.withAppendedId(uri, id)
-
-                    val imageFile = extractAlbumArtAsBytes( contentResolver, audioUri)
-
-                    Log.d("PlaylistRepo", "Adding song: $title - $artist - $duration")
-
-                    songs.add(
-                        Song(
-                            id = id,
-                            name = title,
-                            artist = artist,
-                            duration = duration.toString(),
-                            image = imageFile,
-                            uri = audioUri
-                        )
-                    )
-
-                } while (cursor.moveToNext())
-            } else {
-                Log.e("PlaylistRepo", "Query returned empty cursor")
-            }
+        override suspend fun addPlaylist(playlist: PlaylistEntity): Long {
+            return dao.insertPlaylist(playlist)
         }
 
-        Log.d("PlaylistRepo", "Total songs loaded: ${songs.size}")
-        return songs
-    }
+        override suspend fun addSong(song: SongEntity) {
+            dao.insertSongs(listOf(song))
+        }
 
-    private fun extractAlbumArtAsBytes(
-        contentResolver: ContentResolver,
-        audioUri: Uri
-    ): ByteArray? {
-        val retriever = MediaMetadataRetriever()
-        return try {
-            val fd = contentResolver.openFileDescriptor(audioUri, "r")?.fileDescriptor ?: return null
-            retriever.setDataSource(fd)
-            retriever.embeddedPicture
-        } catch (e: Exception) {
-            Log.e("PlaylistRepo", "Failed to extract embedded picture: ${e.message}")
-            null
-        } finally {
-            retriever.release()
+        override suspend fun addSongToPlaylist(playlistId: Long, songId: Long) {
+            dao.insertPlaylistSongCrossRef(PlaylistSongCrossRef(playlistId, songId))
+        }
+
+        override suspend fun getAllPlaylistsWithSongs(): List<PlaylistWithSongs> {
+            return dao.getPlaylistsWithSongs()
+        }
+
+        override suspend fun removePlaylist(playlistId: Long) {
+            return dao.deletePlaylistCompletely(playlistId)
+        }
+
+        override suspend fun loadSongsFromPlaylist(playlistId: Long): List<SongEntity> {
+            return dao.loadSongsFromPlaylist(playlistId)
         }
     }
-
-
-
-}

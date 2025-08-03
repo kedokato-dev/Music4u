@@ -19,9 +19,7 @@ kotlinxSerializationCore = "1.8.1"
 
 coil2 = "2.7.0"
 
-room = "2.6.1"
-
-kotlinx-coroutines = "1.7.3"
+room = "2.7.2"
 
 #koin
 koin = "3.5.0"
@@ -62,12 +60,6 @@ coil2-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "co
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 
-# Nếu bạn dùng Kotlin Symbol Processing (KSP) thay cho kapt:
-room-compiler-ksp = { module = "androidx.room:room-compiler", version.ref = "room" }
-
-# Nếu cần coroutines (gần như luôn cần)
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
-
 compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
 
 
@@ -81,7 +73,6 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
-ksp = { id = "com.google.devtools.ksp", version = "1.9.0-1.0.13" }
 
 # Optional plugins
 jetbrains-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerialization"}

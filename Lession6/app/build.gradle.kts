@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.jetbrains.kotlin.serialization)
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -40,7 +41,6 @@ android {
     }
 
 
-
 }
 
 dependencies {
@@ -55,6 +55,8 @@ dependencies {
 
     implementation(libs.coil2.compose)
 
+
+    ksp("androidx.room:room-compiler:2.5.0")
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
 

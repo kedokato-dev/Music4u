@@ -5,46 +5,65 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kedokato.lession6.database.Entity.SongEntity
+import com.kedokato.lession6.model.Song
+import com.kedokato.lession6.usecase.AddSongToPlaylistUseCase
 import com.kedokato.lession6.usecase.LoadSongsUseCase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class LibraryViewModel(
     private val loadSongsUseCase: LoadSongsUseCase,
+    private val addSongToPlaylistUseCase: AddSongToPlaylistUseCase,
     private val context: Context
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LibraryState())
     val state: StateFlow<LibraryState> = _state.asStateFlow()
 
+    private var cachedSongs: List<Song>? = null
+
     fun processIntent(intent: LibraryIntent) {
         when (intent) {
-            LibraryIntent.LoadSongs -> {
-                loadSongs()
+            is LibraryIntent.LoadSongs -> {
+                loadSongs(forceReload = false)
             }
 
             is LibraryIntent.RequestPermissionAndLoadSongs -> {
-                val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    Manifest.permission.READ_MEDIA_AUDIO
-                } else {
-                    Manifest.permission.READ_EXTERNAL_STORAGE
-                }
-
-                if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
-                    processIntent(LibraryIntent.LoadSongs)
-                } else {
-                    _state.update { it.copy(requestedPermission = permission) }
-                }
+                requestPermissionAndLoadSongs()
             }
 
             is LibraryIntent.PermissionGranted -> {
-                processIntent(LibraryIntent.LoadSongs)
+                _state.update { it.copy(requestedPermission = null) }
+                loadSongs(forceReload = true)
+            }
+
+            is LibraryIntent.RefreshSongs -> {
+                loadSongs(forceReload = true)
+            }
+
+            is LibraryIntent.AddSongToPlaylist -> {
+                addSongToPlaylist(
+                  intent.playlistId,
+                    intent.song
+                )
+            }
+
+            is LibraryIntent.ShowChoosePlaylistDialog -> {
+                _state.value = _state.value.copy(showChoosePlaylistDialog = !_state.value.showChoosePlaylistDialog)
+            }
+
+            is LibraryIntent.SongSelected -> {
+                _state.update { it.copy(song = intent.song ) }
             }
         }
     }
@@ -53,24 +72,65 @@ class LibraryViewModel(
         _state.update { it.copy(requestedPermission = null) }
     }
 
-    private fun loadSongs() {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, errorMessage = null) }
+    private fun requestPermissionAndLoadSongs() {
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_AUDIO
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
 
+        if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
+            loadSongs(forceReload = false)
+        } else {
+            _state.update { it.copy(requestedPermission = permission) }
+        }
+    }
+
+    private fun loadSongs(forceReload: Boolean = false) {
+        if (!forceReload && cachedSongs != null) {
+            _state.update { it.copy(songs = cachedSongs!!, isLoading = false) }
+            return
+        }
+
+        viewModelScope.launch {
             try {
-                val songs = loadSongsUseCase()
-                val processed = songs.map {
+                _state.update { it.copy(isLoading = true, errorMessage = null) }
+
+                // IO
+                val rawSongs = withContext(Dispatchers.IO) {
+                    loadSongsUseCase()
+                }
+
+                val processedSongs = withContext(Dispatchers.Default) {
+                    rawSongs.map { song ->
+                        song.copy(
+                            name = shortenTitle(song.name, 20),
+                            artist = shortenTitle(song.artist),
+                            duration = formatDuration(song.duration.toLong())
+                        )
+                    }
+                }
+
+                cachedSongs = processedSongs
+
+                _state.update {
                     it.copy(
-                        name = shortenTitle(it.name, 20),
-                        artist = shortenTitle(it.artist),
-                        duration = formatDuration(it.duration.toLong())
+                        songs = processedSongs,
+                        isLoading = false,
+                        errorMessage = null
                     )
                 }
-                _state.update { it.copy(songs = processed, isLoading = false) }
+
+                Log.d("LibraryViewModel", "Successfully loaded ${processedSongs.size} songs")
 
             } catch (e: Exception) {
+                Log.e("LibraryViewModel", "Error loading songs", e)
+
                 _state.update {
-                    it.copy(isLoading = false, errorMessage = e.message ?: "Unknown error")
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = e.message ?: "Không thể tải danh sách bài hát"
+                    )
                 }
             }
         }
@@ -78,7 +138,7 @@ class LibraryViewModel(
 
     private fun shortenTitle(title: String, maxLength: Int = 30): String {
         return if (title.length > maxLength) {
-            title.take(maxLength).trimEnd() + "..."
+            "${title.take(maxLength).trimEnd()}..."
         } else {
             title
         }
@@ -92,4 +152,26 @@ class LibraryViewModel(
         return String.format("%02d:%02d", minutes, seconds)
     }
 
+    private fun addSongToPlaylist(
+        playlistId: Long,
+        song: SongEntity,
+    ) {
+        viewModelScope.launch {
+            try {
+                addSongToPlaylistUseCase(playlistId, song)
+            } catch (e: Exception) {
+
+            }
+        }
+    }
+
+
+    fun clearCache() {
+        cachedSongs = null
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        cachedSongs = null
+    }
 }

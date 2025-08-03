@@ -28,6 +28,10 @@ sealed class RememberScreen: NavKey {
     @SerialName("RememberScreen")
     data object NestedGraph : RememberScreen()
 
+    @Serializable
+    @SerialName("PlaylistDetailScreen")
+    data class PlaylistDetailScreen(val playListId: Long, val playlistTittle: String) : RememberScreen()
+
 }
 
 

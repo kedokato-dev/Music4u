@@ -38,8 +38,7 @@ import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.kedokato.lession6.R
 import com.kedokato.lession6.model.Song
-import com.kedokato.lession6.view.playlist.Menu
-import kotlin.math.max
+import com.kedokato.lession6.view.playlist.playlist.Menu
 import kotlin.math.roundToInt
 
 @Composable

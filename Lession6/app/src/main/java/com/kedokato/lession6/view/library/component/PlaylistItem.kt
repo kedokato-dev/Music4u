@@ -1,6 +1,7 @@
 package com.kedokato.lession6.view.library.component
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,6 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,12 +35,12 @@ import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.kedokato.lession6.R
 import com.kedokato.lession6.model.Song
-import com.kedokato.lession6.view.playlist.Menu
 
 @Composable
 fun PlayListItem(
     song: Song,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onAddClick: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -107,7 +111,49 @@ fun PlayListItem(
         Menu(
             expanded = expanded,
             onDismiss = { expanded = false },
-            song = song
+            song = song,
+            onAddClick = {
+                onAddClick()
+            }
+        )
+    }
+}
+
+
+@Composable
+fun Menu(expanded: Boolean, onDismiss: () -> Unit, song: Song, onAddClick: () -> Unit = {}) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = { onDismiss() },
+        modifier = Modifier
+            .background(Color.DarkGray)
+            .padding(8.dp),
+    ) {
+        DropdownMenuItem(
+            text = { Text("Add to playlist", color = Color.White) },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.add_to_playlist),
+                    contentDescription = "Add to playlist icon",
+                    tint = Color.White
+                )
+            },
+            onClick = {
+                onAddClick()
+            }
+        )
+        DropdownMenuItem(
+            text = { Text("Share (coming soon)", color = Color.Gray) },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.share),
+                    contentDescription = "Share Icon",
+                    tint = Color.White
+                )
+            },
+            onClick = {
+                onDismiss()
+            }
         )
     }
 }

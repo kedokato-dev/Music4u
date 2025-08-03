@@ -1,12 +1,7 @@
-package com.kedokato.lession6.view.playlist
+package com.kedokato.lession6.view.playlist.playlist
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -42,61 +37,31 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kedokato.lession6.R
 import com.kedokato.lession6.model.Song
-import com.kedokato.lession6.repository.PlaylistRepo
-import com.kedokato.lession6.usecase.LoadSongsUseCase
+import com.kedokato.lession6.repository.SongLocalDataSource
 import com.kedokato.lession6.view.playlist.component.PlayGridItem
 import com.kedokato.lession6.view.playlist.component.PlayListItem
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun MyPlayListScreen(
-    context: Context = LocalContext.current
+fun MyPlaylistDetailScreen(
+     playlistId: Long,
+     playlistTitle: String,
 ) {
-    val viewModel: PlaylistViewModel = viewModel(
-        factory = PlaylistViewModelFactory(context)
-    )
-
+    val viewModel: PlaylistViewModel = koinViewModel()
 
     val state by viewModel.state.collectAsState()
 
 
-
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = { granted ->
-            if (granted) {
-                viewModel.processIntent(PlaylistIntent.LoadSongs)
-            }
-        }
-    )
-
     LaunchedEffect(Unit) {
-        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Manifest.permission.READ_MEDIA_AUDIO
-        } else {
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        }
-
-        if (ContextCompat.checkSelfPermission(context, permission)
-            == PackageManager.PERMISSION_GRANTED
-        ) {
-            viewModel.processIntent(PlaylistIntent.LoadSongs)
-        } else {
-            permissionLauncher.launch(permission)
-        }
+        viewModel.processIntent(PlaylistIntent.LoadSongs(playlistId))
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.processIntent(PlaylistIntent.LoadSongs)
-    }
-
-    PlayListScreen(
+    PlaylistContent(
+        tittle = playlistTitle,
         typeDisplay = state.displayType,
         isSort = state.isSorting,
-        viewModel = viewModel,
         listSong = state.songs
     )
 
@@ -105,15 +70,17 @@ fun MyPlayListScreen(
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun PlayListScreen(
+fun PlaylistContent(
+    tittle: String = "My Playlist",
     typeDisplay: Boolean,
     isSort: Boolean = false,
-    viewModel: PlaylistViewModel,
     listSong: List<Song>
 ) {
     var draggedIndex by remember { mutableStateOf(-1) }
     var dragOffset by remember { mutableStateOf(Offset.Zero) }
     val listState = rememberLazyListState()
+
+    val viewModel :PlaylistViewModel = koinViewModel()
 
     if (typeDisplay) {
         LazyColumn(
@@ -125,6 +92,7 @@ fun PlayListScreen(
         ) {
             item {
                 PlayListTopBar(
+                    tittle = tittle,
                     typeDisplay = typeDisplay,
                     onToggleDisplay = {
                         viewModel.processIntent(PlaylistIntent.DisplayType(typeDisplay))
@@ -189,6 +157,7 @@ fun PlayListScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayListTopBar(
+    tittle: String = "My Playlist",
     typeDisplay: Boolean,
     onToggleDisplay: () -> Unit,
     isSort: Boolean,
@@ -196,7 +165,7 @@ fun PlayListTopBar(
     onCancelSort: () -> Unit
 ) {
     CenterAlignedTopAppBar(
-        title = { Text(text = "My Playlist", style = MaterialTheme.typography.headlineSmall) },
+        title = { Text(text = tittle, style = MaterialTheme.typography.headlineSmall) },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
             containerColor = Color.Black,
             titleContentColor = Color.White,
@@ -274,8 +243,7 @@ fun Menu(expanded: Boolean, onDismiss: () -> Unit, song: Song) {
                 )
             },
             onClick = {
-//                onDismiss()
-//                songs.remove(song)
+
             }
         )
         DropdownMenuItem(
@@ -294,18 +262,12 @@ fun Menu(expanded: Boolean, onDismiss: () -> Unit, song: Song) {
     }
 }
 
-class FakeSongRepository : PlaylistRepo {
-    override suspend fun getSongsFromStorage(): List<Song> {
+class FakeSongRepository : SongLocalDataSource {
+    override suspend fun getAllSongs(): List<Song> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getAllPlaylists(): List<Long> {
-        TODO("Not yet implemented")
-    }
 
-    override suspend fun insertSong(song: Song): List<Song> {
-        TODO("Not yet implemented")
-    }
 }
 
 @SuppressLint("ViewModelConstructorInComposable")
@@ -322,11 +284,9 @@ fun PlayListScreenPreview() {
             uri = null
         )
     }
-    val fakeViewModel = PlaylistViewModel(LoadSongsUseCase(FakeSongRepository()))
-    PlayListScreen(
+    PlaylistContent(
         typeDisplay = true,
         isSort = false,
-        viewModel = fakeViewModel,
         listSong = dummySongs
     )
 }

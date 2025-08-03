@@ -26,8 +26,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.kedokato.lession6.R
 import com.kedokato.lession6.model.Song
-import com.kedokato.lession6.view.playlist.Menu
-import kotlin.math.max
+import com.kedokato.lession6.view.playlist.playlist.Menu
 
 
 @Composable

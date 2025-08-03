@@ -22,7 +22,7 @@ fun Button(
         modifier = modifier.fillMaxWidth()
             .height(56.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = getCurrentColorScheme().onPrimary,
+            containerColor = getCurrentColorScheme().primary,
             contentColor = getCurrentColorScheme().onBackground
         )
     ) {
