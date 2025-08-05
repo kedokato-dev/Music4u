@@ -5,19 +5,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kedokato.lession6.data.local.database.Entity.PlaylistEntity
 import com.kedokato.lession6.domain.usecase.AddPlaylistUseCase
-import com.kedokato.lession6.domain.usecase.LoadPlaylistUseCase
 import com.kedokato.lession6.domain.usecase.DeletePlaylistUseCase
-import kotlinx.coroutines.Dispatchers
+import com.kedokato.lession6.domain.usecase.GetUserIdUseCase
+import com.kedokato.lession6.domain.usecase.LoadPlaylistUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MyPlaylistViewModel(
     private val addPlaylistUseCase: AddPlaylistUseCase,
     private val loadPlaylistsUseCase: LoadPlaylistUseCase,
-    private val deletePlaylistUseCase: DeletePlaylistUseCase
+    private val deletePlaylistUseCase: DeletePlaylistUseCase,
+    private val getUserIdUseCase: GetUserIdUseCase
 ) : ViewModel(){
     private val _state = MutableStateFlow(MyPlaylistState())
     val state: StateFlow<MyPlaylistState> = _state.asStateFlow()
@@ -48,72 +49,81 @@ class MyPlaylistViewModel(
 
     private fun createPlaylist(playlistName: String) {
         viewModelScope.launch {
-            try {
-                _state.value = _state.value.copy(isLoading = true)
+            _state.update { it.copy(isLoading = true) }
 
-                withContext(Dispatchers.IO) {
-                    addPlaylistUseCase(PlaylistEntity(name = playlistName, userId = 1))
+            val result = runCatching {
+                addPlaylistUseCase(
+                    PlaylistEntity(name = playlistName, userId = userid)
+                )
+            }
+
+            result.onSuccess {
+                _state.update {
+                    it.copy(showDialog = false, isLoading = false)
                 }
-
-                _state.value = _state.value.copy(
-                    showDialog = false,
-                    isLoading = false
-                )
-
                 loadPlaylists()
-            } catch (e: Exception) {
+            }.onFailure { e ->
                 Log.e("MyPlaylistViewModel", "Error adding playlist", e)
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    error = e.message
-                )
+                _state.update {
+                    it.copy(isLoading = false, error = e.message ?: "Unexpected error")
+                }
             }
         }
     }
+
 
     private fun loadPlaylists() {
         viewModelScope.launch {
-            try {
-                _state.value = _state.value.copy(isLoading = true)
+            _state.update { it.copy(isLoading = true) }
 
-                val playlists = withContext(Dispatchers.IO) {
-                    loadPlaylistsUseCase.invoke()
+            val result = runCatching {
+                    loadPlaylistsUseCase(userid)
+            }
+
+            result.onSuccess { playlists ->
+                _state.update {
+                    it.copy(
+                        playlists = playlists,
+                        isLoading = false,
+                        error = if (playlists.isEmpty()) "No playlists found" else null
+                    )
                 }
-
-                _state.value = _state.value.copy(
-                    playlists = playlists,
-                    isLoading = false,
-                    error = null,
-                    isEmpty = playlists.isEmpty()
-                )
-            } catch (e: Exception) {
+            }.onFailure { e ->
                 Log.e("MyPlaylistViewModel", "Error loading playlists", e)
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    error = e.message
-                )
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: "Unexpected error"
+                    )
+                }
             }
         }
     }
+
 
     private fun deletePlaylist(playlistId: Long) {
         viewModelScope.launch {
-            try {
-                _state.value = _state.value.copy(isLoading = true)
+            _state.update { it.copy(isLoading = true) }
 
-                withContext(Dispatchers.IO) {
-                    deletePlaylistUseCase(playlistId)
-                }
+            val result = runCatching {
+                deletePlaylistUseCase(playlistId)
+            }
 
-                _state.value = _state.value.copy(isLoading = false)
+            result.onSuccess {
+                _state.update { it.copy(isLoading = false) }
                 loadPlaylists()
-            } catch (e: Exception) {
+            }.onFailure { e ->
                 Log.e("MyPlaylistViewModel", "Error deleting playlist", e)
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    error = e.message
-                )
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: "Unexpected error"
+                    )
+                }
             }
         }
     }
+
+
+    private val userid: Long =  getUserIdUseCase() ?: 1L
 }
