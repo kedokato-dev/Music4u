@@ -9,7 +9,7 @@ interface  PlaylistRepo {
     suspend fun addPlaylist(playlist: PlaylistEntity): Long
     suspend fun addSong(song: SongEntity)
     suspend fun addSongToPlaylist(playlistId: Long, songId: Long)
-    suspend fun getAllPlaylistsWithSongs(): List<PlaylistWithSongs>
+    suspend fun getAllPlaylistsWithSongs(userId: Long): List<PlaylistWithSongs>
 
     suspend fun removePlaylist(playlistId: Long)
 

@@ -23,8 +23,8 @@ class PlaylistRepoImpl(
             dao.insertPlaylistSongCrossRef(PlaylistSongCrossRef(playlistId, songId))
         }
 
-        override suspend fun getAllPlaylistsWithSongs(): List<PlaylistWithSongs> {
-            return dao.getPlaylistsWithSongs()
+        override suspend fun getAllPlaylistsWithSongs(userId: Long): List<PlaylistWithSongs> {
+            return dao.getPlaylistsWithSongs(userId)
         }
 
         override suspend fun removePlaylist(playlistId: Long) {

@@ -5,7 +5,7 @@ import com.kedokato.lession6.domain.repository.PlaylistRepo
 
 
 class LoadPlaylistUseCase (private val repo: PlaylistRepo){
-    suspend  operator fun invoke(): List<PlaylistWithSongs> {
-        return repo.getAllPlaylistsWithSongs()
+    suspend  operator fun invoke(userId: Long): List<PlaylistWithSongs> {
+        return repo.getAllPlaylistsWithSongs(userId)
     }
 }

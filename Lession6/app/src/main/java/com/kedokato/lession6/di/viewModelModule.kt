@@ -14,7 +14,7 @@ val viewModelModule = module {
     viewModel { SignUpViewModel(get()) }
     viewModel { LibraryViewModel(get(), get(), androidContext()) }
     viewModel { PlaylistViewModel(get()) }
-    viewModel { MyPlaylistViewModel(get(), get(), get()) }
+    viewModel { MyPlaylistViewModel(get(), get(), get(), get()) }
     viewModel { LoginViewModel(get(), get()) }
     viewModel { ProfileViewModel(get(), get(), get()) }
 }
