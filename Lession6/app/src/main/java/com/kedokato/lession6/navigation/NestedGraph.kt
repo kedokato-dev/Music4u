@@ -29,10 +29,10 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.example.compose.getCurrentColorScheme
-import com.kedokato.lession6.view.home.HomeScreen
-import com.kedokato.lession6.view.library.LibraryScreen
-import com.kedokato.lession6.view.playlist.myplaylist.MyPlaylistScreen
-import com.kedokato.lession6.view.playlist.playlist.MyPlaylistDetailScreen
+import com.kedokato.lession6.presentation.home.HomeScreen
+import com.kedokato.lession6.presentation.library.LibraryScreen
+import com.kedokato.lession6.presentation.playlist.myplaylist.MyPlaylistScreen
+import com.kedokato.lession6.presentation.playlist.playlist.MyPlaylistDetailScreen
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")

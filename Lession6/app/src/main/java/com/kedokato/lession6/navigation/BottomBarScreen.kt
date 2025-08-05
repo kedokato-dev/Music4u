@@ -32,7 +32,7 @@ sealed class BottomBarScreen(
 
     @Serializable
     data object Playlist : BottomBarScreen(
-        icon = R.drawable.playlist,
+        icon = R.drawable.play_list,
         title = "Playlist"
     )
 
