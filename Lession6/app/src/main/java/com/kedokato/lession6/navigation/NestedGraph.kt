@@ -53,10 +53,6 @@ fun NestedGraph(onProfileClick: () -> Unit) {
             NavigationBar(
                 containerColor = colorScheme.background,
                 modifier = Modifier.graphicsLayer {
-                    shape = RoundedCornerShape(
-                        topStart = 20.dp,
-                        topEnd = 20.dp
-                    )
                     clip = true
                 },
                 tonalElevation = 8.dp,
@@ -71,7 +67,7 @@ fun NestedGraph(onProfileClick: () -> Unit) {
                                 tint = if (currentBottomBarScreen == destination) colorScheme.primary else colorScheme.onBackground
                             )
                         },
-                        alwaysShowLabel = false,
+                        alwaysShowLabel = true,
                         label = { Text(destination.title) },
                         onClick = {
                             if (backStack.lastOrNull() != destination) {

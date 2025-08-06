@@ -36,6 +36,7 @@ import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
+import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.R
 import com.kedokato.lession6.domain.model.Song
 import com.kedokato.lession6.presentation.playlist.playlist.Menu
@@ -65,7 +66,7 @@ fun PlayListItem(
                 }
             }
             .zIndex(if (isDragging) 1f else 0f)
-            .background(if (isDragging) Color.DarkGray else Color.Transparent)
+            .background(getCurrentColorScheme().background)
     ) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
@@ -86,6 +87,7 @@ fun PlayListItem(
         Column(
             modifier = Modifier
                 .weight(1f)
+                .background(getCurrentColorScheme().background)
                 .padding(start = 4.dp, end = 8.dp)
         ) {
             Text(
@@ -93,7 +95,7 @@ fun PlayListItem(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.bodyLarge,
-                color = Color.White,
+                color = getCurrentColorScheme().onBackground,
                 modifier = Modifier.padding(top = 8.dp)
             )
             Text(
@@ -101,14 +103,14 @@ fun PlayListItem(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray,
+                color = getCurrentColorScheme().onBackground,
                 modifier = Modifier.padding(bottom = 4.dp)
             )
         }
         Text(
             text = song.duration,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.White,
+            color = getCurrentColorScheme().onBackground,
             modifier = Modifier
                 .padding(8.dp)
                 .align(Alignment.CenterVertically),
@@ -124,7 +126,7 @@ fun PlayListItem(
                 .clickable {
                     expanded = true
                 },
-            colorFilter = ColorFilter.tint(Color.White)
+            colorFilter = ColorFilter.tint(getCurrentColorScheme().onBackground)
         )
 
         Menu(

@@ -9,8 +9,11 @@ sealed class LibraryIntent {
     data object RefreshSongs : LibraryIntent()
     data class AddSongToPlaylist(val playlistId: Long, val song: SongEntity) : LibraryIntent()
     data object ShowChoosePlaylistDialog : LibraryIntent()
-
     data class SongSelected(val song: SongEntity) : LibraryIntent()
+
+    data object LoadSongsFromRemote : LibraryIntent()
+
+    data object RetryLoadSongsFromRemote : LibraryIntent()
 
 
 

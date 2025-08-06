@@ -4,6 +4,7 @@ import com.kedokato.lession6.domain.usecase.AddPlaylistUseCase
 import com.kedokato.lession6.domain.usecase.AddSongToPlaylistUseCase
 import com.kedokato.lession6.domain.usecase.ClearUserIdUseCase
 import com.kedokato.lession6.domain.usecase.DeletePlaylistUseCase
+import com.kedokato.lession6.domain.usecase.LoadSongFromRemoteUseCase
 import com.kedokato.lession6.domain.usecase.GetUserIdUseCase
 import com.kedokato.lession6.domain.usecase.GetUserProfileUseCase
 import com.kedokato.lession6.domain.usecase.LoadPlaylistUseCase
@@ -31,4 +32,6 @@ val useCaseModule = module {
     single { SetUserIdUseCase(get()) }
     single { ClearUserIdUseCase(get()) }
     single { UpdateUserProfileUseCase(get()) }
+
+    single { LoadSongFromRemoteUseCase(get()) }
 }

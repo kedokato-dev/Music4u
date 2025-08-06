@@ -1,6 +1,7 @@
 package com.kedokato.lession6.presentation.playlist.myplaylist
 
 import DialogAddPlaylist
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,6 +43,7 @@ import coil.request.ImageRequest
 import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.R
 import com.kedokato.lession6.data.local.database.Entity.PlaylistWithSongs
+import com.kedokato.lession6.presentation.playlist.component.MyPlaylistTopBar
 import com.kedokato.lession6.presentation.playlist.component.PlaylistEmptyView
 import org.koin.androidx.compose.koinViewModel
 
@@ -90,6 +92,7 @@ fun MyPlaylistContent(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
+            .background(getCurrentColorScheme().background),
     ) {
         item {
             MyPlaylistTopBar(
@@ -141,6 +144,8 @@ fun PlaylistItem(playlist: PlaylistWithSongs, onDeleteClick: (Long) -> Unit = {}
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
+            .padding(8.dp)
+            .background(getCurrentColorScheme().background)
             .clickable {
                 onClick(playlist.playlist.playlistId)
             },
@@ -230,36 +235,4 @@ fun PlaylistItem(playlist: PlaylistWithSongs, onDeleteClick: (Long) -> Unit = {}
             }
         }
     }
-}
-
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MyPlaylistTopBar(
-    onAddClick: () -> Unit,
-) {
-    CenterAlignedTopAppBar(
-        title = { Text(text = "My Playlist", style = MaterialTheme.typography.headlineMedium) },
-        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = getCurrentColorScheme().background,
-            titleContentColor = getCurrentColorScheme().onBackground,
-            actionIconContentColor = getCurrentColorScheme().onBackground,
-            navigationIconContentColor = getCurrentColorScheme().onBackground,
-            scrolledContainerColor = getCurrentColorScheme().background,
-        ),
-        windowInsets = WindowInsets(0, 0, 0, 0),
-        actions = {
-                Icon(
-                    painter = painterResource(R.drawable.add),
-                    contentDescription = "Add Icon",
-                    tint = getCurrentColorScheme().onBackground,
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp)
-                        .size(24.dp)
-                        .clickable { onAddClick() }
-                )
-        }
-
-    )
 }

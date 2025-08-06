@@ -12,19 +12,29 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.R
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun HomeScreen(
     modifier: Modifier,
     onProfileClick: () -> Unit,
 ) {
+
+    val viewModel: HomeViewModel = koinViewModel()
     val colorScheme = getCurrentColorScheme()
+
+//    LaunchedEffect(Unit) {
+//        viewModel.loadData()
+//    }
+
+
     Column(
         modifier = modifier.fillMaxSize()
             .background(color = colorScheme.background),

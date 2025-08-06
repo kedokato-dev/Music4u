@@ -7,8 +7,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.example.compose.getCurrentColorScheme
 
 @Composable
 fun DialogAddPlaylist(
@@ -24,7 +26,9 @@ fun DialogAddPlaylist(
                 .fillMaxWidth()
                 .height(300.dp)
                 .padding(8.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF222222)),
+            colors = CardDefaults.cardColors(
+                containerColor = getCurrentColorScheme().background
+            ),
             shape = RoundedCornerShape(16.dp),
         ) {
             Column(
@@ -37,34 +41,27 @@ fun DialogAddPlaylist(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                    color = Color.White,
+                    color = getCurrentColorScheme().onBackground,
                     textAlign = TextAlign.Center,
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = subTitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color(0xFFB0B0B0),
-                    textAlign = TextAlign.Center,
-                )
+
                 Spacer(modifier = Modifier.height(12.dp))
                 TextField(
                     value = playlistTitle,
                     onValueChange = { playlistTitle = it },
-                    placeholder = { Text("Give your playlist a title", color = Color(0xFFB0B0B0)) },
+                    placeholder = { Text("Give your playlist a title", color = getCurrentColorScheme().primary) },
                     singleLine = true,
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFF333333),
-                        unfocusedContainerColor = Color(0xFF333333),
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        cursorColor = Color(0xFF00BCD4)
+                        focusedContainerColor = getCurrentColorScheme().background,
+                        unfocusedContainerColor = getCurrentColorScheme().background,
+                        focusedIndicatorColor = getCurrentColorScheme().onBackground,
+                        unfocusedIndicatorColor = getCurrentColorScheme().onBackground,
+                        focusedTextColor = getCurrentColorScheme().primary,
+                        unfocusedTextColor = getCurrentColorScheme().primary,
+                        cursorColor = getCurrentColorScheme().primary
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
-                Divider(color = Color(0xFF444444), thickness = 1.dp)
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -76,12 +73,13 @@ fun DialogAddPlaylist(
                     ) {
                         Text(
                             "Cancel",
-                            color = Color.White,
+                            color = Color.Red,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.fillMaxWidth(),
                             textAlign = TextAlign.Center
                         )
                     }
+
                     TextButton(
                         onClick = { onCreate(playlistTitle) },
                         modifier = Modifier.weight(1f)
@@ -98,4 +96,15 @@ fun DialogAddPlaylist(
             }
         }
     }
+}
+
+@Preview
+@Composable
+private fun PreviewAddPlaylist() {
+    DialogAddPlaylist(
+        onDismissRequest = {},
+        onCreate = {},
+        title = "Create Playlist",
+        subTitle = "Give your playlist a title"
+    )
 }

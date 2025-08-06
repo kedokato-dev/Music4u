@@ -6,9 +6,11 @@ import com.kedokato.lession6.domain.model.Song
 data class LibraryState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val songs: List<Song> = emptyList(),
+    val localSongs: List<Song> = emptyList(),
+    val remoteSongs: List<Song> = emptyList(),
     val requestedPermission: String? = null,
     val playlistId: Long? = null,
     val showChoosePlaylistDialog: Boolean = false,
-    val song: SongEntity? = null
+    val song: SongEntity? = null,
+    val errorLoadingFromRemote: String? = null,
 )

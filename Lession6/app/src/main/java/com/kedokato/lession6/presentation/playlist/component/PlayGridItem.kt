@@ -24,6 +24,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.R
 import com.kedokato.lession6.domain.model.Song
 import com.kedokato.lession6.presentation.playlist.playlist.Menu
@@ -75,21 +76,21 @@ fun PlayGridItem(song: Song) {
             text = song.name,
             maxLines = 1,
             style = MaterialTheme.typography.bodyLarge,
-            color = Color.White,
+            color = getCurrentColorScheme().onBackground,
             modifier = Modifier.padding(horizontal = 8.dp)
         )
         Text(
             text = song.artist,
             maxLines = 1,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray,
+            color = getCurrentColorScheme().onBackground,
             modifier = Modifier.padding(horizontal = 8.dp)
         )
 
         Text(
             text = song.duration,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.White,
+            color = getCurrentColorScheme().onBackground,
             modifier = Modifier.padding(horizontal = 8.dp),
         )
     }

@@ -41,6 +41,7 @@ import com.kedokato.lession6.domain.model.Song
 import com.kedokato.lession6.domain.repository.SongLocalDataSource
 import com.kedokato.lession6.presentation.playlist.component.PlayGridItem
 import com.kedokato.lession6.presentation.playlist.component.PlayListItem
+import com.kedokato.lession6.presentation.playlist.component.PlayListTopBar
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -85,9 +86,9 @@ fun PlaylistContent(
         LazyColumn(
             state = listState,
             modifier = Modifier
-                .background(Color.Black)
-                .padding(top = 16.dp)
+                .background(getCurrentColorScheme().background)
                 .padding(horizontal = 8.dp)
+                .fillMaxSize()
         ) {
             item {
                 PlayListTopBar(
@@ -104,7 +105,7 @@ fun PlaylistContent(
 
             itemsIndexed(
                 items = listSong,
-                key = { _, song -> song.id }
+                key = { _, song -> song.id },
             ) { index, song ->
                 val isDragging = draggedIndex == index
                 PlayListItem(
@@ -127,7 +128,7 @@ fun PlaylistContent(
     } else {
             Column(
                 modifier = Modifier
-                    .background(Color.Black)
+                    .background(getCurrentColorScheme().background)
                     .padding(top = 16.dp)
                     .padding(horizontal = 8.dp)
             ) {
@@ -144,6 +145,7 @@ fun PlaylistContent(
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     modifier = Modifier.fillMaxSize()
+                        .background(getCurrentColorScheme().background)
                 ) {
                     items(listSong.size) { index ->
                         val song = listSong[index]
@@ -154,75 +156,6 @@ fun PlaylistContent(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun PlayListTopBar(
-    tittle: String = "My Playlist",
-    typeDisplay: Boolean,
-    onToggleDisplay: () -> Unit,
-    isSort: Boolean,
-    onSort: () -> Unit,
-    onCancelSort: () -> Unit
-) {
-    CenterAlignedTopAppBar(
-        title = { Text(text = tittle, style = MaterialTheme.typography.headlineSmall) },
-        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = getCurrentColorScheme().background,
-            titleContentColor = getCurrentColorScheme().onBackground,
-            actionIconContentColor = getCurrentColorScheme().onBackground,
-            navigationIconContentColor = getCurrentColorScheme().onBackground,
-            scrolledContainerColor = getCurrentColorScheme().background,
-        ),
-        windowInsets = WindowInsets(0, 0, 0, 0),
-        navigationIcon = {
-            if (isSort) {
-                Icon(
-                    painter = painterResource(R.drawable.cancel),
-                    contentDescription = "Close Sort",
-                    tint = Color.White,
-                    modifier = Modifier
-                        .padding(start = 8.dp)
-                        .size(24.dp)
-                        .clickable { onCancelSort() }
-                )
-            }
-        },
-        actions = {
-            if (isSort) {
-                Icon(
-                    painter = painterResource(R.drawable.tick),
-                    contentDescription = "Sort Icon",
-                    tint = Color.White,
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp)
-                        .size(24.dp)
-                        .clickable { onSort() }
-                )
-            } else {
-                Icon(
-                    painter = painterResource(
-                        if (typeDisplay) R.drawable.grid else R.drawable.list
-                    ),
-                    contentDescription = "Grid/List Icon",
-                    tint = Color.White,
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp)
-                        .size(24.dp)
-                        .clickable { onToggleDisplay() }
-                )
-                Icon(
-                    painter = painterResource(R.drawable.sort),
-                    contentDescription = "Sort Icon",
-                    tint = Color.White,
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp)
-                        .size(24.dp)
-                        .clickable { onSort() }
-                )
-            }
-        },
-    )
-}
 
 @Composable
 fun Menu(expanded: Boolean, onDismiss: () -> Unit, song: Song) {

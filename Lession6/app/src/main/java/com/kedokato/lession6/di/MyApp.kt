@@ -16,7 +16,8 @@ class MyApp : Application() {
                 repositoryModule,
                 useCaseModule,
                 viewModelModule,
-                platformModule
+                platformModule,
+                networkModule,
             )
         }
 

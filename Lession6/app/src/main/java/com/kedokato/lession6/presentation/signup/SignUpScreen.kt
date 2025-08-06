@@ -71,20 +71,9 @@ fun SignUpScreen(
         }
     }
 
-    Scaffold(
-        modifier = Modifier.fillMaxWidth(),
-        topBar = {
-            SignupTopAppBar(
-                modifier = modifier,
-                onBackClick = onBackClick
-            )
-        }
-
-    ) { paddingValues ->
         Box(
             modifier = modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .background(colorScheme.background),
 
             contentAlignment = Alignment.Center
@@ -98,6 +87,12 @@ fun SignUpScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
             ) {
+                SignupTopAppBar(
+                    modifier = modifier,
+                    onBackClick = onBackClick
+                )
+
+
                 Logo(
                     modifier = modifier.size(200.dp)
                 )
@@ -174,7 +169,7 @@ fun SignUpScreen(
                         viewModel.processIntent(SignUpIntent.EmailChanged(it))
                     },
                     label = stringResource(R.string.email),
-                    icon = R.drawable.person,
+                    icon = R.drawable.mail,
                     modifier = modifier.fillMaxWidth(1f)
                 )
 
@@ -199,7 +194,7 @@ fun SignUpScreen(
             }
         }
     }
-}
+
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
