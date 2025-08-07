@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kedokato.lession6.domain.usecase.GetUserIdUseCase
+import com.kedokato.lession6.domain.usecase.GetUserIdUseCaseShared
 import com.kedokato.lession6.domain.usecase.GetUserProfileUseCase
 import com.kedokato.lession6.domain.usecase.UpdateUserProfileUseCase
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +21,7 @@ import kotlinx.coroutines.withContext
 
 class ProfileViewModel(
     private val getUserProfileUseCase: GetUserProfileUseCase,
-    private val getUserIdUseCase: GetUserIdUseCase,
+    private val getUserIdUseCaseShared: GetUserIdUseCaseShared,
     private val updateUserProfileUseCase: UpdateUserProfileUseCase
 ) : ViewModel() {
 
@@ -92,7 +92,7 @@ class ProfileViewModel(
 
             is ProfileIntent.LoadUserData -> {
                 viewModelScope.launch {
-                    loadUserData(userId = userId)
+                    loadUserData(userId = getUserId())
                 }
             }
 
@@ -177,7 +177,7 @@ class ProfileViewModel(
         if (validateForm()) {
             val row = withContext(Dispatchers.IO) {
                 updateUserProfileUseCase.invoke(
-                    userId,
+                    getUserId(),
                     name = _state.value.name,
                     phone = _state.value.phone,
                     university = _state.value.university,
@@ -231,7 +231,11 @@ class ProfileViewModel(
         }
     }
 
-    private val userId: Long
-        get() = getUserIdUseCase() ?: 0L
+    private suspend fun getUserId(): Long {
+        return withContext(Dispatchers.IO) {
+            getUserIdUseCaseShared() ?: 0L
+        }
+    }
+
 
 }

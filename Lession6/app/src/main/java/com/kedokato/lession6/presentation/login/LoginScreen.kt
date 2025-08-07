@@ -62,17 +62,21 @@ fun LoginScreen(
     }
 
     LaunchedEffect(Unit) {
-        viewModel.navigation.collectLatest { event ->
+        viewModel.loginEvent.collectLatest { event ->
             when (event) {
-                is LoginNavigation.OnClickLogin -> {
+                is LoginEvent.IsRememberMeChecked -> {
+                    viewModel.processIntent(LoginIntent.RememberMeChanged)
+                }
+                LoginEvent.OnClickLogin -> {
                     onLoginClick()
                     viewModel.onNavigationHandled()
                 }
-
-                is LoginNavigation.OnClickSignUp -> {
+                LoginEvent.OnClickSignUp -> {
                     onSignUpClick()
                     viewModel.onNavigationHandled()
                 }
+                is LoginEvent.ShowError -> TODO()
+                is LoginEvent.ShowSuccess -> TODO()
 
                 null -> {
 

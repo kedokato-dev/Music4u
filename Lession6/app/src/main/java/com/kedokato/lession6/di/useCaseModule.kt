@@ -4,12 +4,15 @@ import com.kedokato.lession6.domain.usecase.AddPlaylistUseCase
 import com.kedokato.lession6.domain.usecase.AddSongToPlaylistUseCase
 import com.kedokato.lession6.domain.usecase.ClearUserIdUseCase
 import com.kedokato.lession6.domain.usecase.DeletePlaylistUseCase
+import com.kedokato.lession6.domain.usecase.DownloadSongUseCase
 import com.kedokato.lession6.domain.usecase.LoadSongFromRemoteUseCase
-import com.kedokato.lession6.domain.usecase.GetUserIdUseCase
+import com.kedokato.lession6.domain.usecase.GetUserIdUseCaseShared
 import com.kedokato.lession6.domain.usecase.GetUserProfileUseCase
+import com.kedokato.lession6.domain.usecase.LoadDownloadedSongsUseCase
 import com.kedokato.lession6.domain.usecase.LoadPlaylistUseCase
 import com.kedokato.lession6.domain.usecase.LoadSongFromPlaylistUseCase
 import com.kedokato.lession6.domain.usecase.LoadSongsUseCase
+import com.kedokato.lession6.domain.usecase.SaveUserIdUseCase
 import com.kedokato.lession6.domain.usecase.ScanAndInsertSongsUseCase
 import com.kedokato.lession6.domain.usecase.SetUserIdUseCase
 import com.kedokato.lession6.domain.usecase.UpdateUserProfileUseCase
@@ -28,10 +31,15 @@ val useCaseModule = module {
     single { UserRegisterUseCase(get()) }
     single { UserAuthenticationUseCase(get()) }
     single { GetUserProfileUseCase(get()) }
-    single { GetUserIdUseCase(get()) }
+
     single { SetUserIdUseCase(get()) }
     single { ClearUserIdUseCase(get()) }
     single { UpdateUserProfileUseCase(get()) }
 
     single { LoadSongFromRemoteUseCase(get()) }
+    single { DownloadSongUseCase(get()) }
+    single { LoadDownloadedSongsUseCase(get()) }
+
+    single { SaveUserIdUseCase(get()) }
+    single { GetUserIdUseCaseShared(get()) }
 }

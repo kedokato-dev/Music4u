@@ -12,6 +12,7 @@ class MyApp : Application() {
             androidContext(this@MyApp)
             modules(
                 databaseModule,
+                dataModule,
                 sessionModule,
                 repositoryModule,
                 useCaseModule,

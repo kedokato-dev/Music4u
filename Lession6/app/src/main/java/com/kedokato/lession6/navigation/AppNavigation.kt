@@ -1,6 +1,11 @@
 package com.kedokato.lession6.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entry
@@ -8,24 +13,40 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.kedokato.lession6.domain.usecase.GetUserIdUseCaseShared
 import com.kedokato.lession6.presentation.home.HomeScreen
 import com.kedokato.lession6.presentation.login.LoginScreen
 import com.kedokato.lession6.presentation.playlist.myplaylist.MyPlaylistScreen
 import com.kedokato.lession6.presentation.profile.ProfileScreen
 import com.kedokato.lession6.presentation.signup.SignUpScreen
 import com.kedokato.lession6.presentation.splash.SplashScreen
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.koin.compose.koinInject
 
 @Composable
 fun AppNavigation(
     modifier: Modifier = Modifier,
 ) {
-    val backStack = rememberNavBackStack<RememberScreen>(
-        RememberScreen.LoginScreen(
-            username = "",
-            password = ""
-        )
-//        RememberScreen.NestedGraph
-    )
+    val getUserIdUseCase: GetUserIdUseCaseShared = koinInject()
+    var isCheckingUser by remember { mutableStateOf(true) }
+    var hasValidUser by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        val savedUserId = withContext(Dispatchers.IO) {
+            getUserIdUseCase.invoke()
+        }
+        savedUserId?.let { hasValidUser = it > 0 }
+        isCheckingUser = false
+    }
+
+    val initialScreen = when {
+        isCheckingUser -> RememberScreen.NestedGraph
+        hasValidUser -> RememberScreen.NestedGraph
+        else -> RememberScreen.LoginScreen(username = "", password = "")
+    }
+
+    val backStack = rememberNavBackStack<RememberScreen>(initialScreen)
 
     NavDisplay(
         backStack = backStack,
@@ -47,15 +68,11 @@ fun AppNavigation(
                     initialUsername = entry.username,
                     initialPassword = entry.password,
                     onSignUpClick = {
-                        backStack.add(
-                            RememberScreen.SignUpScreen
-                        )
+                        backStack.add(RememberScreen.SignUpScreen)
                     },
                     onLoginClick = {
                         backStack.clear()
-                        backStack.add(
-                            RememberScreen.NestedGraph
-                        )
+                        backStack.add(RememberScreen.NestedGraph)
                     },
                 )
             }
@@ -67,11 +84,8 @@ fun AppNavigation(
                         backStack.removeLastOrNull()
                     },
                     onSignUpClick = { username, password ->
-                        // Xóa màn hình SignUpScreen khỏi backstack
                         backStack.removeLastOrNull()
-                        // Xóa luôn màn hình LoginScreen cũ khỏi backstack
                         backStack.removeLastOrNull()
-                        // Thêm lại màn hình LoginScreen mới với dữ liệu đã được cập nhật
                         backStack.add(
                             RememberScreen.LoginScreen(
                                 username = username,
@@ -86,9 +100,7 @@ fun AppNavigation(
                 HomeScreen(
                     modifier = modifier,
                     onProfileClick = {
-                        backStack.add(
-                            RememberScreen.ProfileScreen
-                        )
+                        backStack.add(RememberScreen.ProfileScreen)
                     }
                 )
             }
@@ -101,7 +113,6 @@ fun AppNavigation(
                     onBackClick = {
                         backStack.removeLastOrNull()
                     }
-
                 )
             }
 
@@ -112,9 +123,7 @@ fun AppNavigation(
             entry<RememberScreen.NestedGraph> {
                 NestedGraph(
                     onProfileClick = {
-                        backStack.add(
-                            RememberScreen.ProfileScreen
-                        )
+                        backStack.add(RememberScreen.ProfileScreen)
                     }
                 )
             }

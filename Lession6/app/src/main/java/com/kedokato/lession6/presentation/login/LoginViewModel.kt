@@ -1,8 +1,11 @@
 package com.kedokato.lession6.presentation.login
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kedokato.lession6.data.session.SessionManager
+import com.kedokato.lession6.domain.usecase.GetUserIdUseCaseShared
+import com.kedokato.lession6.domain.usecase.SaveUserIdUseCase
 import com.kedokato.lession6.domain.usecase.SetUserIdUseCase
 import com.kedokato.lession6.domain.usecase.UserAuthenticationUseCase
 import kotlinx.coroutines.Dispatchers
@@ -14,16 +17,19 @@ import kotlinx.coroutines.withContext
 
 class LoginViewModel(
     private val userAuthenticationUseCase: UserAuthenticationUseCase,
-    private val setUserIdUseCase: SetUserIdUseCase
+    private val setUserIdUseCase: SetUserIdUseCase,
+    private val saveUserIdUseCase: SaveUserIdUseCase,
+    private val getUserIdUseCaseShared: GetUserIdUseCaseShared
 ) : ViewModel(){
     private val _state = MutableStateFlow(LoginState())
     val state : StateFlow<LoginState> = _state.asStateFlow()
 
-    private val _navigation = MutableStateFlow<LoginNavigation?>(null)
-    val navigation: StateFlow<LoginNavigation?> = _navigation.asStateFlow()
+
+    private val _loginEvent = MutableStateFlow<LoginEvent?>(null)
+    val loginEvent: StateFlow<LoginEvent?> = _loginEvent.asStateFlow()
 
     fun onNavigationHandled() {
-        _navigation.value = null
+        _loginEvent.value = null
     }
 
 
@@ -60,11 +66,12 @@ class LoginViewModel(
                 _state.value = _state.value.copy(
                     isRememberMe = !_state.value.isRememberMe
                 )
+
             }
 
             LoginIntent.SignUpClicked -> {
                viewModelScope.launch {
-                   _navigation.emit(LoginNavigation.OnClickSignUp)
+                   _loginEvent.emit(LoginEvent.OnClickSignUp)
                }
             }
         }
@@ -80,8 +87,17 @@ class LoginViewModel(
                 )
             }
 
+            if(_state.value.isRememberMe){
+                saveUserIdUseCase.invoke(user?.userId ?: 0L)
+                val getUserId = withContext(Dispatchers.IO) {
+                    getUserIdUseCaseShared.invoke()
+                }
+
+                Log.d("LoginViewModel", "Saved user id: ${getUserId}")
+            }
+
             if(user!=null){
-                _navigation.emit(LoginNavigation.OnClickLogin)
+                _loginEvent.emit(LoginEvent.OnClickLogin)
                 setUserIdUseCase.invoke(user.userId)
                 _state.value = _state.value.copy(
                     loginSuccess = true

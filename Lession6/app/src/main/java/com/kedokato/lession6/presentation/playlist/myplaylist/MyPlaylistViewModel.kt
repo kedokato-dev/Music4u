@@ -6,19 +6,21 @@ import androidx.lifecycle.viewModelScope
 import com.kedokato.lession6.data.local.database.Entity.PlaylistEntity
 import com.kedokato.lession6.domain.usecase.AddPlaylistUseCase
 import com.kedokato.lession6.domain.usecase.DeletePlaylistUseCase
-import com.kedokato.lession6.domain.usecase.GetUserIdUseCase
+import com.kedokato.lession6.domain.usecase.GetUserIdUseCaseShared
 import com.kedokato.lession6.domain.usecase.LoadPlaylistUseCase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MyPlaylistViewModel(
     private val addPlaylistUseCase: AddPlaylistUseCase,
     private val loadPlaylistsUseCase: LoadPlaylistUseCase,
     private val deletePlaylistUseCase: DeletePlaylistUseCase,
-    private val getUserIdUseCase: GetUserIdUseCase
+    private val getUserIdUseCaseShared: GetUserIdUseCaseShared
 ) : ViewModel(){
     private val _state = MutableStateFlow(MyPlaylistState())
     val state: StateFlow<MyPlaylistState> = _state.asStateFlow()
@@ -53,7 +55,7 @@ class MyPlaylistViewModel(
 
             val result = runCatching {
                 addPlaylistUseCase(
-                    PlaylistEntity(name = playlistName, userId = userid)
+                    PlaylistEntity(name = playlistName, userId = getUserId())
                 )
             }
 
@@ -77,7 +79,7 @@ class MyPlaylistViewModel(
             _state.update { it.copy(isLoading = true) }
 
             val result = runCatching {
-                    loadPlaylistsUseCase(userid)
+                    loadPlaylistsUseCase(getUserId())
             }
 
             result.onSuccess { playlists ->
@@ -125,5 +127,10 @@ class MyPlaylistViewModel(
     }
 
 
-    private val userid: Long =  getUserIdUseCase() ?: 1L
+
+    private suspend fun getUserId(): Long {
+       return withContext(Dispatchers.IO){
+            getUserIdUseCaseShared() ?: 1L
+       }
+    }
 }
