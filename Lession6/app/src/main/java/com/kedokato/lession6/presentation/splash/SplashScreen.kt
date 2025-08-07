@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -18,9 +19,11 @@ import androidx.compose.ui.unit.dp
 import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.R
 import com.kedokato.lession6.presentation.component.Logo
+import kotlinx.coroutines.delay
 
 @Composable
-fun SplashScreen(modifier: Modifier) {
+fun SplashScreen(modifier: Modifier,
+                 onNavigationLogin: () -> Unit = {}) {
     val colorScheme = getCurrentColorScheme()
     Column(
         modifier = modifier.background(colorScheme.background)
@@ -29,6 +32,11 @@ fun SplashScreen(modifier: Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
+
+        LaunchedEffect(Unit) {
+            delay(2000)
+            onNavigationLogin()
+        }
 
 
         Logo(

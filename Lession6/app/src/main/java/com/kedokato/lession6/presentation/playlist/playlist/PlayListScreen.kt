@@ -129,7 +129,6 @@ fun PlaylistContent(
             Column(
                 modifier = Modifier
                     .background(getCurrentColorScheme().background)
-                    .padding(top = 16.dp)
                     .padding(horizontal = 8.dp)
             ) {
                 PlayListTopBar(

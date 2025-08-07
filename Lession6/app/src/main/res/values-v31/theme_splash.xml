@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.Lession6.Splash" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Màu nền splash -->
+        <item name="android:windowSplashScreenBackground">@color/black</item>
+        <!-- Ẩn icon splash mặc định (Android 12+) -->
+        <item name="android:windowSplashScreenAnimatedIcon">@null</item>
+    </style>
+</resources>

@@ -23,7 +23,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
-
         window.navigationBarColor = Color.Transparent.toArgb()
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightNavigationBars =
             true
