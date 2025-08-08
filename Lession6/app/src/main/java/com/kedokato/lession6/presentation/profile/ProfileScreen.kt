@@ -2,7 +2,6 @@ package com.kedokato.lession6.presentation.profile
 
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -35,6 +34,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.R
 import com.kedokato.lession6.presentation.component.Button
@@ -234,13 +234,3 @@ fun LabelForTextField(
     )
 }
 
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewProfileView() {
-    ProfileScreen(
-        isEditMode = false,
-        isDarkTheme = false,
-        modifier = Modifier.fillMaxSize()
-    )
-}

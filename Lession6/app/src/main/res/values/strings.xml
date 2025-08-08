@@ -20,4 +20,21 @@
     <string name="email_error">Email is valid</string>
     <string name="confirm_password_error">Confirm password do not match</string>
 
+
+
+            <!--  PLAYER SCREEN  -->
+    <string name="player_screen_title">Now Playing</string>
+    <string name="play_button">Play</string>
+    <string name="pause_button">Pause</string>
+    <string name="next_button">Next</string>
+    <string name="previous_button">Previous</string>
+    <string name="shuffle_button">Shuffle</string>
+    <string name="repeat_button">Repeat</string>
+    <string name="close_player_screen">Close Player Screen</string>
+    <string name="back_to_home">Back</string>
+    <string name="song_title">Song Title</string>
+    <string name="artist_name">Artist Name</string>
+    <string name="duration">Duration</string>
+    <string name="current_time">Current Time</string>
+
 </resources>
