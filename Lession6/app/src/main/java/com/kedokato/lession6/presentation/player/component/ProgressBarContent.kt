@@ -28,32 +28,40 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.compose.getCurrentColorScheme
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProgressBarContent(
     modifier: Modifier = Modifier,
-    onValueChangeFinished: (Float) -> Unit = {}
+    progress: Float = 0f,
+    currentPosition: Long = 0L,
+    duration: Long = 0L,
+    onSeekTo: (Float) -> Unit = {}
 ) {
-    var sliderPosition by remember { mutableFloatStateOf(89f) }
-    var isDragging by remember { mutableStateOf(false) }
-    var valueRange by remember { mutableStateOf(0f..180f) }
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    var isUserSeeking by remember { mutableStateOf(false) }
+    var seekProgress by remember { mutableFloatStateOf(0f) }
+
+    // Reset seek state khi không kéo
+    val displayProgress = if (isUserSeeking) seekProgress else progress
+    val displayPosition = if (isUserSeeking) {
+        (seekProgress * duration).toLong()
+    } else {
+        currentPosition
+    }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
         Slider(
-            value = sliderPosition,
-            onValueChange = {
-                sliderPosition = it
-                isDragging = true
+            value = displayProgress,
+            onValueChange = { newValue ->
+                isUserSeeking = true
+                seekProgress = newValue
             },
-            valueRange = valueRange,
+            valueRange = 0f..1f,
             onValueChangeFinished = {
-                onValueChangeFinished(sliderPosition)
-                isDragging = false
+                isUserSeeking = false
+                onSeekTo(seekProgress)
             },
             colors = SliderDefaults.colors(
-                thumbColor = Color.Transparent,
+                thumbColor = getCurrentColorScheme().primary,
                 activeTrackColor = getCurrentColorScheme().primary,
                 inactiveTrackColor = getCurrentColorScheme().onBackground.copy(0.5f)
             ),
@@ -68,7 +76,7 @@ fun ProgressBarContent(
                 )
             },
             track = { sliderState ->
-                val progress = sliderState.value / sliderState.valueRange.endInclusive
+                val trackProgress = sliderState.value / sliderState.valueRange.endInclusive
 
                 Box(
                     Modifier
@@ -83,14 +91,12 @@ fun ProgressBarContent(
 
                     Box(
                         Modifier
-                            .fillMaxWidth(progress)
+                            .fillMaxWidth(trackProgress)
                             .height(8.dp)
                             .background(getCurrentColorScheme().primary, CircleShape)
                     )
                 }
             }
-
-
         )
 
         Row(
@@ -99,12 +105,12 @@ fun ProgressBarContent(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
-                text = "00:00",
+                text = formatDuration(displayPosition),
                 style = MaterialTheme.typography.bodyMedium,
                 color = getCurrentColorScheme().onBackground
             )
             Text(
-                text = "3:00",
+                text = formatDuration(duration),
                 style = MaterialTheme.typography.bodyMedium,
                 color = getCurrentColorScheme().onBackground
             )
@@ -112,12 +118,22 @@ fun ProgressBarContent(
     }
 }
 
-
-@Preview(showBackground = true)
-@Composable
-private fun ProgressBarContentPreview() {
-    ProgressBarContent(
-        modifier = Modifier.fillMaxWidth(),
-        onValueChangeFinished = {}
-    )
+fun formatDuration(millis: Long): String {
+    val seconds = (millis / 1000) % 60
+    val minutes = (millis / (1000 * 60)) % 60
+    return String.format("%02d:%02d", minutes, seconds)
 }
+
+//
+//@Preview(showBackground = true)
+//@Composable
+//private fun ProgressBarContentPreview() {
+//    ProgressBarContent(
+//        modifier = Modifier.fillMaxWidth(),
+//        onValueChangeFinished = {},
+//        progress = 0.5f,
+//        currentPosition = 60000L, // 1 phút
+//        duration = 180000L // 3 phút
+//
+//    )
+//}

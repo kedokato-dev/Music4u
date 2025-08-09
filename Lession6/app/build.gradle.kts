@@ -60,6 +60,7 @@ dependencies {
 
     implementation(libs.coil2.compose)
     implementation(libs.androidx.datastore.core.android)
+    implementation(libs.androidx.media3.exoplayer)
 
 
     ksp("androidx.room:room-compiler:2.5.0")
@@ -81,6 +82,9 @@ dependencies {
     implementation(libs.lottie.compose)
 
     implementation(libs.datastore.preferences)
+
+    implementation("androidx.media3:media3-session:1.2.0")
+    implementation("androidx.media:media:1.7.0")
 
 
 

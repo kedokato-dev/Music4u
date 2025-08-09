@@ -52,8 +52,8 @@ class DownloadSongFromRemoteRepoImpl(
                     name = song.name,
                     artist = song.artist,
                     duration = song.duration,
-                    uri = file.toUri(),
-                    image = null
+                    image = null,
+                    uri = file.toUri().toString()
                 )
             }
         }
@@ -96,8 +96,8 @@ class DownloadSongFromRemoteRepoImpl(
                                 name = title,
                                 artist = artist,
                                 duration = mediaInfo.first,
-                                uri = file.toUri(),
-                                image = mediaInfo.second
+                                image = mediaInfo.second,
+                                uri = file.toUri().toString()
                             )
                         } else null
                     } catch (e: Exception) {

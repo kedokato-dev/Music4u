@@ -31,6 +31,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.presentation.home.HomeScreen
 import com.kedokato.lession6.presentation.library.LibraryScreen
+import com.kedokato.lession6.presentation.player.PlayerMusicScreen
 import com.kedokato.lession6.presentation.playlist.myplaylist.MyPlaylistScreen
 import com.kedokato.lession6.presentation.playlist.playlist.MyPlaylistDetailScreen
 
@@ -110,7 +111,12 @@ fun NestedGraph(onProfileClick: () -> Unit) {
                     }
                     entry<BottomBarScreen.Library> {
                         LibraryScreen(
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier.fillMaxSize(),
+                            onSongClick = {
+                                backStack.add(
+                                    RememberScreen.PlayerMusicScreen(it)
+                                )
+                            }
 
                         )
                     }
@@ -128,6 +134,15 @@ fun NestedGraph(onProfileClick: () -> Unit) {
                         MyPlaylistDetailScreen(
                             playlistId = entry.playListId,
                             playlistTitle = entry.playlistTittle,
+                        )
+                    }
+
+                    entry<RememberScreen.PlayerMusicScreen> { entry ->
+                        PlayerMusicScreen(
+                            song = entry.song,
+                            onNavigationIconClick = {
+                                backStack.removeLastOrNull()
+                            }
                         )
                     }
                 }

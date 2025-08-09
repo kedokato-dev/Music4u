@@ -65,7 +65,7 @@ class SongLocalDataSourceImpl(
                             artist = artist,
                             duration = duration.toString(),
                             image = imageFile,
-                            uri = audioUri
+                            uri = audioUri.toString()
                         )
                     )
 

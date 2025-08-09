@@ -14,7 +14,7 @@ object SongMapper {
             artist = songDTO.artist,
             duration = songDTO.duration.toString(),
             image = null,
-            uri = songDTO.path.toUri(),
+            uri = songDTO.path,
         )
     }
 

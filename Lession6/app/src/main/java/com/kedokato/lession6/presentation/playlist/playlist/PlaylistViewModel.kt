@@ -71,7 +71,7 @@ class PlaylistViewModel(
                         artist = song.artist,
                         duration = formatDuration(song.duration),
                         image = song.albumArt,
-                        uri = song.uri,
+                        uri = song.uri.toString(),
                     )
                 }
                 _state.update { it.copy(songs = formattedSongs) }

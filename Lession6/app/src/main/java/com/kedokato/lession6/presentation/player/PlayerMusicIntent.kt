@@ -2,7 +2,7 @@ package com.kedokato.lession6.presentation.player
 
 sealed class PlayerMusicIntent {
 
-    data class OnPlayPauseClick(val isPlaying: Boolean) : PlayerMusicIntent()
+    data object OnPlayPauseClick : PlayerMusicIntent()
 
     data class OnNextClick(val songId: String) : PlayerMusicIntent()
 
@@ -12,7 +12,7 @@ sealed class PlayerMusicIntent {
 
     data class OnShuffleClick(val isShuffle: Boolean) : PlayerMusicIntent()
 
-    data class OnSeekTo(val position: Long) : PlayerMusicIntent()
+    data class OnSeekTo(val position: Float) : PlayerMusicIntent()
 }
 
 

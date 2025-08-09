@@ -1,12 +1,14 @@
 package com.kedokato.lession6.domain.model
 
 import android.net.Uri
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Song(
     val id: Long,
     val name: String,
     val artist: String,
     val duration: String,
     val image: ByteArray?,
-    val uri: Uri?
+    val uri: String?
 )

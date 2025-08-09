@@ -3,6 +3,7 @@ package com.kedokato.lession6.di
 import com.kedokato.lession6.presentation.home.HomeViewModel
 import com.kedokato.lession6.presentation.library.LibraryViewModel
 import com.kedokato.lession6.presentation.login.LoginViewModel
+import com.kedokato.lession6.presentation.player.PlayerMusicViewModel
 import com.kedokato.lession6.presentation.playlist.myplaylist.MyPlaylistViewModel
 import com.kedokato.lession6.presentation.playlist.playlist.PlaylistViewModel
 import com.kedokato.lession6.presentation.profile.ProfileViewModel
@@ -46,4 +47,14 @@ val viewModelModule = module {
     }
 
     viewModel { HomeViewModel(get()) }
+
+    viewModel{
+        PlayerMusicViewModel(
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+            get())
+    }
 }

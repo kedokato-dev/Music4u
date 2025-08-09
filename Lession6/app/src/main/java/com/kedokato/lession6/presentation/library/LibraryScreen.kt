@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.net.toUri
 import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.data.local.database.Entity.PlaylistWithSongs
 import com.kedokato.lession6.data.local.database.Entity.SongEntity
@@ -49,7 +50,8 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun LibraryScreen(modifier: Modifier) {
+fun LibraryScreen(modifier: Modifier,
+                  onSongClick: (Song) -> Unit = {}) {
 
     val viewModel: LibraryViewModel = koinViewModel()
     val myPlaylistViewModel: MyPlaylistViewModel = koinViewModel()
@@ -81,7 +83,7 @@ fun LibraryScreen(modifier: Modifier) {
     Box(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             LibraryTopAppBar()
-            PagerWithTabs(viewModel = viewModel, state = state)
+            PagerWithTabs(viewModel = viewModel, state = state, onSongClick = onSongClick)
         }
 
         if (state.isLoading) {
@@ -107,7 +109,7 @@ fun LibraryScreen(modifier: Modifier) {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun PagerWithTabs(viewModel: LibraryViewModel, state: LibraryState) {
+fun PagerWithTabs(viewModel: LibraryViewModel, state: LibraryState, onSongClick: (Song) -> Unit = {}) {
     val pagerState = rememberPagerState(
         initialPage = 0,
         pageCount = { 2 }
@@ -165,6 +167,7 @@ fun PagerWithTabs(viewModel: LibraryViewModel, state: LibraryState) {
                     onAddToPlaylist = {
                         viewModel.processIntent(LibraryIntent.ShowChoosePlaylistDialog)
                     },
+                    onSongClick = onSongClick,
                     viewModel = viewModel,
                     state = state
                 )
@@ -175,6 +178,7 @@ fun PagerWithTabs(viewModel: LibraryViewModel, state: LibraryState) {
                     onAddToPlaylist = {
                         viewModel.processIntent(LibraryIntent.ShowChoosePlaylistDialog)
                     },
+                    onSongClick = onSongClick,
                     viewModel = viewModel,
                     state = state
                 )
@@ -188,6 +192,7 @@ fun LibraryContent(
     songs: List<Song>,
     modifier: Modifier = Modifier,
     onAddToPlaylist: () -> Unit,
+    onSongClick: (Song) -> Unit = {},
     viewModel: LibraryViewModel,
     state: LibraryState
 ) {
@@ -216,10 +221,12 @@ fun LibraryContent(
                     artist = songs[index].artist,
                     duration = parseDurationToMilliseconds(songs[index].duration),
                     albumArt = songs[index].image,
-                    uri = songs[index].uri
+                    uri = songs[index].uri?.toUri()
                 )
                 viewModel.processIntent(LibraryIntent.SongSelected(songEntity))
-            })
+            },onSongClick = {
+                onSongClick(songs[index])
+            } )
         }
     }
 }

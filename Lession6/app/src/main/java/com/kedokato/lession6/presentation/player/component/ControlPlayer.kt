@@ -15,9 +15,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.R
+import com.kedokato.lession6.presentation.player.PlayerMusicState
 
 @Composable
-fun ControlPlayer(modifier: Modifier = Modifier) {
+fun ControlPlayer(
+    modifier: Modifier = Modifier,
+    state: PlayerMusicState,
+    onShuffleClick: () -> Unit = {},
+    onPreviousClick: () -> Unit = {},
+    onPlayPauseClick: () -> Unit = {},
+    onNextClick: () -> Unit = {},
+    onRepeatClick: () -> Unit = {}
+) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceAround,
@@ -28,7 +37,7 @@ fun ControlPlayer(modifier: Modifier = Modifier) {
             icon = R.drawable.shuffle,
             size = 24,
             color = getCurrentColorScheme().onBackground.hashCode(),
-            onClick = {  }
+            onClick = { }
         )
 
         IconControl(
@@ -36,15 +45,21 @@ fun ControlPlayer(modifier: Modifier = Modifier) {
             icon = R.drawable.skip_previous,
             size = 48,
             color = getCurrentColorScheme().onBackground.hashCode(),
-            onClick = {  }
+            onClick = { }
         )
 
         IconControl(
             modifier = modifier.size(64.dp),
-            icon = R.drawable.play_circle,
+            icon = if (state.isPlaying) R.drawable.pause_circle else R.drawable.play_circle,
             size = 128,
             color = getCurrentColorScheme().primary.hashCode(),
-            onClick = {  }
+            onClick = {
+                if (state.isPlaying) {
+                    onPlayPauseClick()
+                } else {
+                    onPlayPauseClick()
+                }
+            }
         )
 
         IconControl(
@@ -52,7 +67,7 @@ fun ControlPlayer(modifier: Modifier = Modifier) {
             icon = R.drawable.skip_next,
             size = 48,
             color = getCurrentColorScheme().onBackground.hashCode(),
-            onClick = {  }
+            onClick = { }
         )
 
         IconControl(
@@ -60,7 +75,7 @@ fun ControlPlayer(modifier: Modifier = Modifier) {
             icon = R.drawable.repeat,
             size = 24,
             color = getCurrentColorScheme().onBackground.hashCode(),
-            onClick = {  }
+            onClick = { }
         )
 
 
@@ -88,6 +103,7 @@ fun IconControl(modifier: Modifier = Modifier, icon: Int, size: Int, color: Int,
 @Composable
 private fun ControlPlayerPreview() {
     ControlPlayer(
-        modifier = Modifier
+        modifier = Modifier,
+        state = PlayerMusicState(isPlaying = true, song = null)
     )
 }

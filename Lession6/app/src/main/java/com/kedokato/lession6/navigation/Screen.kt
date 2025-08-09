@@ -1,6 +1,7 @@
 package com.kedokato.lession6.navigation
 
 import androidx.navigation3.runtime.NavKey
+import com.kedokato.lession6.domain.model.Song
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -31,6 +32,10 @@ sealed class RememberScreen: NavKey {
     @Serializable
     @SerialName("PlaylistDetailScreen")
     data class PlaylistDetailScreen(val playListId: Long, val playlistTittle: String) : RememberScreen()
+
+    @Serializable
+    @SerialName("PlayerMusicScreen")
+    data class PlayerMusicScreen(val song: Song) : RememberScreen()
 
 }
 

@@ -42,7 +42,8 @@ import org.koin.androidx.compose.get
 fun PlayListItem(
     song: Song,
     modifier: Modifier = Modifier,
-    onAddClick: () -> Unit
+    onAddClick: () -> Unit,
+    onSongClick: (song: Song) -> Unit = {}
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -50,6 +51,7 @@ fun PlayListItem(
         modifier = modifier
             .background(getCurrentColorScheme().background)
             .fillMaxSize()
+            .clickable { onSongClick(song) }
     ) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
