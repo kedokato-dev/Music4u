@@ -4,7 +4,15 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kedokato.lession6.domain.model.Song
+import com.kedokato.lession6.domain.repository.MusicRepo
+import com.kedokato.lession6.domain.usecase.DownloadSongUseCase
 import com.kedokato.lession6.domain.usecase.LoadSongFromPlaylistUseCase
+import com.kedokato.lession6.domain.usecase.music.NextSongUseCase
+import com.kedokato.lession6.domain.usecase.music.PauseSongUseCase
+import com.kedokato.lession6.domain.usecase.music.PlaySongUseCase
+import com.kedokato.lession6.domain.usecase.music.PrevSongUseCase
+import com.kedokato.lession6.domain.usecase.music.ResumeSongUseCase
+import com.kedokato.lession6.presentation.player.PlayerMusicState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,10 +21,20 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class PlaylistViewModel(
-    private val loadSongsFromPlaylistUseCase: LoadSongFromPlaylistUseCase
+    private val loadSongsFromPlaylistUseCase: LoadSongFromPlaylistUseCase,
+    private val playSongUseCase: PlaySongUseCase,
+    private val pauseSongUseCase: PauseSongUseCase,
+    private val nextSongUseCase: NextSongUseCase,
+    private val prevSongUseCase: PrevSongUseCase,
+    private val resumeSongUseCase: ResumeSongUseCase,
+    private val musicRepo: MusicRepo
 ) : ViewModel() {
     private val _state = MutableStateFlow(PlaylistState())
     val state: StateFlow<PlaylistState> = _state.asStateFlow()
+
+    private val _playerMusicState = MutableStateFlow(PlayerMusicState())
+    val playerMusicState: StateFlow<PlayerMusicState> = _playerMusicState.asStateFlow()
+
 
 
     fun processIntent(intent: PlaylistIntent) {
@@ -35,12 +53,32 @@ class PlaylistViewModel(
             is PlaylistIntent.LoadSongs -> {
                 loadSongsFromPlaylist(intent.playlistId)
             }
+
+            is PlaylistIntent.PlaySong -> {
+                togglePlayPause()
+            }
         }
     }
 
 
+
     private fun loadSong(){
 
+    }
+
+    private fun togglePlayPause() {
+        val currentSong = _playerMusicState.value.song ?: return
+        viewModelScope.launch {
+            if (_playerMusicState.value.isPlaying) {
+                pauseSongUseCase()
+            } else {
+                if (_playerMusicState.value.currentPosition > 0) {
+                    resumeSongUseCase()
+                } else {
+                    playSongUseCase(currentSong)
+                }
+            }
+        }
     }
 
     private fun shortenTitle(title: String, maxLength: Int = 30): String {

@@ -13,4 +13,5 @@ interface MusicServiceController {
     suspend fun next()
     suspend fun prev()
     suspend fun seekTo(position: Long)
+    suspend fun stopSong()
 }

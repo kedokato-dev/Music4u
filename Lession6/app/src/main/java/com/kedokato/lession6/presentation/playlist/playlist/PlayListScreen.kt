@@ -48,6 +48,7 @@ import org.koin.androidx.compose.koinViewModel
 fun MyPlaylistDetailScreen(
      playlistId: Long,
      playlistTitle: String,
+     onSongClick: (Song) -> Unit = { }
 ) {
     val viewModel: PlaylistViewModel = koinViewModel()
 
@@ -62,7 +63,8 @@ fun MyPlaylistDetailScreen(
         tittle = playlistTitle,
         typeDisplay = state.displayType,
         isSort = state.isSorting,
-        listSong = state.songs
+        listSong = state.songs,
+        onSongClick = onSongClick
     )
 
 
@@ -74,7 +76,8 @@ fun PlaylistContent(
     tittle: String = "My Playlist",
     typeDisplay: Boolean,
     isSort: Boolean = false,
-    listSong: List<Song>
+    listSong: List<Song>,
+    onSongClick: (Song) -> Unit = { },
 ) {
     var draggedIndex by remember { mutableStateOf(-1) }
     var dragOffset by remember { mutableStateOf(Offset.Zero) }
@@ -121,7 +124,10 @@ fun PlaylistContent(
                     },
                     onDrag = {
                     },
-                    modifier = Modifier.animateItem()
+                    modifier = Modifier.animateItem(),
+                    onNavigationPlayerMusic = {
+                        onSongClick(song)
+                    }
                 )
             }
         }

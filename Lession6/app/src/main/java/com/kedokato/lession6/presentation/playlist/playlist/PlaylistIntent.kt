@@ -5,4 +5,5 @@ sealed class PlaylistIntent{
     data class DisplayType(val displayType: Boolean) : PlaylistIntent()
     data class DeleteSongInPlaylist(val playlistId: Int) : PlaylistIntent()
     data class LoadSongs(val playlistId: Long) : PlaylistIntent()
+    data class PlaySong(val songId: Long) : PlaylistIntent()
 }

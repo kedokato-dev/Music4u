@@ -39,7 +39,9 @@ import coil.request.ImageRequest
 import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.R
 import com.kedokato.lession6.domain.model.Song
+import com.kedokato.lession6.presentation.player.PlayerMusicViewModel
 import com.kedokato.lession6.presentation.playlist.playlist.Menu
+import com.kedokato.lession6.presentation.playlist.playlist.PlaylistViewModel
 import kotlin.math.roundToInt
 
 @Composable
@@ -51,7 +53,8 @@ fun PlayListItem(
     onDragStart: () -> Unit = {},
     onDragEnd: () -> Unit = {},
     onDrag: (Offset) -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onNavigationPlayerMusic: () -> Unit = {},
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -67,6 +70,11 @@ fun PlayListItem(
             }
             .zIndex(if (isDragging) 1f else 0f)
             .background(getCurrentColorScheme().background)
+            .clickable(
+                onClick = {
+                    onNavigationPlayerMusic()
+                }
+            )
     ) {
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)

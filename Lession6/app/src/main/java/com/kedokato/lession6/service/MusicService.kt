@@ -70,11 +70,7 @@ class MusicService : Service() {
             ACTION_SKIP_NEXT -> {}
             ACTION_SKIP_PREVIOUS -> {}
             ACTION_STOP -> {
-                mediaPlayer?.stop() // Dừng nhạc trước
-                mediaPlayer?.release()
-                mediaPlayer = null
-                stopForeground(STOP_FOREGROUND_REMOVE)
-                stopSelf()
+               stopSong()
             }
         }
         return START_NOT_STICKY
@@ -133,6 +129,16 @@ class MusicService : Service() {
             currentPosition = position,
             progress = progress
         )
+    }
+
+    fun stopSong() {
+        mediaPlayer?.stop()
+        mediaPlayer?.release()
+        mediaPlayer = null
+        currentSong = null
+        _playerState.value = PlayerState()
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopProgressUpdates()
     }
 
     fun isPlaying(): Boolean = mediaPlayer?.isPlaying ?: false

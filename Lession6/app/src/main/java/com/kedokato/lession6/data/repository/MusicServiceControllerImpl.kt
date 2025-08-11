@@ -126,4 +126,13 @@ class MusicServiceControllerImpl(
         }
         musicService?.seekTo(position)
     }
+
+    override suspend fun stopSong() {
+        android.util.Log.d("MusicServiceController", "Stop called")
+        if (!isServiceConnected || musicService == null) {
+            musicService?.stopSong()
+            return
+        }
+        musicService?.stopSong()
+    }
 }
