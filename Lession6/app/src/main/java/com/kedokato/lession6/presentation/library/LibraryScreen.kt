@@ -220,7 +220,7 @@ fun LibraryContent(
                     title = songs[index].name,
                     artist = songs[index].artist,
                     duration = parseDurationToMilliseconds(songs[index].duration),
-                    albumArt = songs[index].image,
+                    albumArt = songs[index].image?.toUri(),
                     uri = songs[index].uri?.toUri()
                 )
                 viewModel.processIntent(LibraryIntent.SongSelected(songEntity))

@@ -41,9 +41,9 @@ fun AppNavigation(
     }
 
     val initialScreen = when {
-        isCheckingUser -> RememberScreen.SplashScreen
-        hasValidUser -> RememberScreen.NestedGraph
-        else -> RememberScreen.LoginScreen(username = "", password = "")
+        isCheckingUser -> RememberScreen.NestedGraph
+        hasValidUser -> RememberScreen.SplashScreen
+        else -> RememberScreen.LoginScreen(username = "quan", password = "1")
     }
 
     val backStack = rememberNavBackStack<RememberScreen>(initialScreen)
@@ -116,6 +116,10 @@ fun AppNavigation(
                     modifier = modifier,
                     onBackClick = {
                         backStack.removeLastOrNull()
+                    },
+                    onNavigationLogin ={
+                        backStack.clear()
+                        backStack.add(RememberScreen.LoginScreen(username = "", password = ""))
                     }
                 )
             }

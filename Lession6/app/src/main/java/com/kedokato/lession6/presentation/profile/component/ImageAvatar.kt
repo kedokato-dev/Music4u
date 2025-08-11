@@ -30,7 +30,8 @@ fun AvatarImage(
     modifier: Modifier,
     colorScheme: ColorScheme,
     imageUri: Uri? = null,
-    onClickCamera: () -> Unit = {}
+    onClickCamera: () -> Unit = {},
+    isEditMode: Boolean = false
 ) {
     Box() {
         if (imageUri != null) {
@@ -65,30 +66,32 @@ fun AvatarImage(
             )
         }
 
-        Box(
-            modifier = modifier
-                .align(Alignment.BottomEnd)
-                .padding(2.dp)
-                .background(
-                    color = colorScheme.background,
-                    shape = RoundedCornerShape(20.dp)
-                )
-        ) {
-            IconButton(
-                onClick = onClickCamera,
+        if(isEditMode){
+            Box(
+                modifier = modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(2.dp)
+                    .background(
+                        color = colorScheme.background,
+                        shape = RoundedCornerShape(20.dp)
+                    )
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.camera),
-                    contentDescription = "Camera Icon",
-                    modifier = modifier
-                        .size(40.dp)
-                        .align(Alignment.CenterEnd)
-                        .background(
-                            color = Color.Transparent,
-                            shape = RoundedCornerShape(20.dp)
-                        ),
-                    tint = colorScheme.primary
-                )
+                IconButton(
+                    onClick = onClickCamera,
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.camera),
+                        contentDescription = "Camera Icon",
+                        modifier = modifier
+                            .size(40.dp)
+                            .align(Alignment.CenterEnd)
+                            .background(
+                                color = Color.Transparent,
+                                shape = RoundedCornerShape(20.dp)
+                            ),
+                        tint = colorScheme.primary
+                    )
+                }
             }
         }
     }

@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModel
 import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.domain.model.Song
 import com.kedokato.lession6.presentation.player.component.ControlPlayer
+import com.kedokato.lession6.presentation.player.component.ImageSongContent
 import com.kedokato.lession6.presentation.player.component.ImageSongContent2
 import com.kedokato.lession6.presentation.player.component.ProgressBarContent
 import org.koin.androidx.compose.koinViewModel
@@ -60,7 +61,7 @@ fun PlayerMusicContent(
     ) {
         Spacer(modifier = Modifier.size(8.dp))
 
-        ImageSongContent2(
+        ImageSongContent(
             modifier = Modifier,
             song = song
         )

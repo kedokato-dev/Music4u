@@ -70,7 +70,7 @@ class PlaylistViewModel(
                         name = shortenTitle(song.title),
                         artist = song.artist,
                         duration = formatDuration(song.duration),
-                        image = song.albumArt,
+                        image = song.albumArt.toString(),
                         uri = song.uri.toString(),
                     )
                 }

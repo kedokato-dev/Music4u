@@ -18,7 +18,7 @@ class ScanAndInsertSongsUseCase(
                     title = it.name,
                     artist = it.artist,
                     duration = it.duration.toLong(),
-                    albumArt = it.image,
+                    albumArt = it.image?.toUri(),
                     uri = it.uri?.toUri()
                 )
             )

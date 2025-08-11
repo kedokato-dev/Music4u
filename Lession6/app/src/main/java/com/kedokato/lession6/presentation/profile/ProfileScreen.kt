@@ -38,6 +38,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.R
 import com.kedokato.lession6.presentation.component.Button
+import com.kedokato.lession6.presentation.component.ButtonLogout
 import com.kedokato.lession6.presentation.component.DialogWithImage
 import com.kedokato.lession6.presentation.profile.component.AvatarImage
 import com.kedokato.lession6.presentation.profile.component.EditContainer
@@ -51,6 +52,7 @@ fun ProfileScreen(
     isDarkTheme: Boolean = false,
     modifier: Modifier,
     onBackClick: () -> Unit = {},
+    onNavigationLogin: () -> Unit = {},
 ) {
     val viewModel: ProfileViewModel = koinViewModel()
     val state by viewModel.state.collectAsState()
@@ -92,6 +94,9 @@ fun ProfileScreen(
                 ProfileEvent.ToggleEditMode -> TODO()
                 ProfileEvent.ShowSnackBarError -> TODO()
                 ProfileEvent.OpenGallery -> TODO()
+                ProfileEvent.Logout -> {
+                    onNavigationLogin()
+                }
             }
         }
     }
@@ -104,6 +109,7 @@ fun ProfileScreen(
         state = state,
         viewModel = viewModel,
         onBackClick = onBackClick,
+        onNavigationLogin = onNavigationLogin
 
     )
 }
@@ -116,6 +122,7 @@ fun ProfileContent(
     state: ProfileState,
     viewModel: ProfileViewModel,
     onBackClick: () -> Unit = {},
+    onNavigationLogin: () -> Unit = {},
 ) {
     val focusManager = LocalFocusManager.current
     val colorScheme = getCurrentColorScheme()
@@ -153,7 +160,8 @@ fun ProfileContent(
             onClickCamera = {
                 viewModel.processIntent(ProfileIntent.ChangeAvatar)
 
-            }
+            },
+            isEditMode = state.isEdit
         )
 
         Spacer(modifier = modifier.size(16.dp))
@@ -186,6 +194,13 @@ fun ProfileContent(
                     viewModel.processIntent(ProfileIntent.Submit)
                     // thay doi state cho dialog
                     viewModel.processIntent(ProfileIntent.ShowDialog)
+                })
+        }else{
+            ButtonLogout(
+                text = "Logout",
+                modifier = Modifier.fillMaxWidth(0.3f),
+                onClick = {
+                    onNavigationLogin()
                 })
         }
 

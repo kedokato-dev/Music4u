@@ -21,7 +21,7 @@ import org.koin.dsl.module
 
 val repositoryModule = module {
     single<PlaylistRepo> { PlaylistRepoImpl(get()) }
-    single<SongLocalDataSource> { SongLocalDataSourceImpl(get()) }
+    single<SongLocalDataSource> { SongLocalDataSourceImpl(get(), androidContext()) }
     single<UserRepo> { UserRepoImpl(get(), get()) }
     single<GetSongFromRemoteRepo> { GetSongRepoImpl(get()) }
     single <DownloadSongFromRemoteRepo> { DownloadSongFromRemoteRepoImpl(androidContext()) }

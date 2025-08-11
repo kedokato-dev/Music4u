@@ -87,21 +87,19 @@ class LoginViewModel(
                 )
             }
 
-            if(_state.value.isRememberMe){
+            if(user!=null && _state.value.isRememberMe){
+                _loginEvent.emit(LoginEvent.OnClickLogin)
+                setUserIdUseCase.invoke(user.userId)
+                _state.value = _state.value.copy(
+                    loginSuccess = true
+                )
+
                 saveUserIdUseCase.invoke(user?.userId ?: 0L)
                 val getUserId = withContext(Dispatchers.IO) {
                     getUserIdUseCaseShared.invoke()
                 }
 
                 Log.d("LoginViewModel", "Saved user id: ${getUserId}")
-            }
-
-            if(user!=null){
-                _loginEvent.emit(LoginEvent.OnClickLogin)
-                setUserIdUseCase.invoke(user.userId)
-                _state.value = _state.value.copy(
-                    loginSuccess = true
-                )
             }else{
                 _state.value = _state.value.copy(loginSuccess = false)
             }

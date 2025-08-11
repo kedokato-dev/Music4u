@@ -107,13 +107,15 @@ class DownloadSongFromRemoteRepoImpl(
         }
     }
 
-    private fun extractMediaInfo(file: File): Pair<String, ByteArray?> {
+    private fun extractMediaInfo(file: File): Pair<String, String?> {
         return try {
             val retriever = android.media.MediaMetadataRetriever()
             retriever.setDataSource(file.absolutePath)
 
             // Extract duration
-            val durationMs = retriever.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
+            val durationMs = retriever.extractMetadata(
+                android.media.MediaMetadataRetriever.METADATA_KEY_DURATION
+            )?.toLongOrNull()
             val duration = durationMs?.let { ms ->
                 val seconds = ms / 1000
                 val minutes = seconds / 60
@@ -123,13 +125,26 @@ class DownloadSongFromRemoteRepoImpl(
 
             // Extract album art as ByteArray
             val albumArt = retriever.embeddedPicture
+            var albumArtUri: String? = null
+
+            if (albumArt != null) {
+                // Lưu ra file
+                val artFile = File(
+                    file.parentFile,  // lưu cùng thư mục bài hát
+                    "${file.nameWithoutExtension}_cover.jpg"
+                )
+                FileOutputStream(artFile).use { it.write(albumArt) }
+
+                albumArtUri = artFile.toUri().toString()
+            }
 
             retriever.release()
-            Pair(duration, albumArt)
+            Pair(duration, albumArtUri)
         } catch (e: Exception) {
             Pair("00:00", null)
         }
     }
+
 
     private fun generateSafeFileName(title: String, artist: String): String {
         val raw = "$title-$artist"

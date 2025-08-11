@@ -34,7 +34,7 @@ class PlayerMusicViewModel(
                     currentPosition = serviceState.currentPosition,
                     duration = serviceState.duration,
                     progress = serviceState.progress, // Sử dụng progress từ service
-                    song = serviceState.currentSong ?: _playerMusicState.value.song
+                    song = serviceState.song,
                 )
             }
         }
@@ -55,14 +55,12 @@ class PlayerMusicViewModel(
     fun onPlay(song: Song) {
         viewModelScope.launch {
             playSongUseCase(song)
-            _playerMusicState.value = _playerMusicState.value.copy(isPlaying = true)
         }
     }
 
     fun onPause() {
         viewModelScope.launch {
             pauseSongUseCase()
-            _playerMusicState.value = _playerMusicState.value.copy(isPlaying = false)
         }
     }
 

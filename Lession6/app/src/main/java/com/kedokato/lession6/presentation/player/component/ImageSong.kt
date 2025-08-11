@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
@@ -18,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.compose.getCurrentColorScheme
@@ -30,17 +32,30 @@ fun ImageSongContent(modifier: Modifier = Modifier, song: Song) {
         modifier = modifier
     ) {
         AsyncImage(
-            model = song.image,
+            model = song.image?.toUri(),
             contentDescription = "Image of ${song.name}",
+            placeholder = painterResource(id = R.drawable.apple_music),
+            error = painterResource(id = R.drawable.apple_music),
             modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            contentScale = Crop
+                .fillMaxWidth()
+                .height(350.dp),
+            contentScale = ContentScale.Crop
         )
         Spacer(
-            modifier = Modifier.weight(0.1f)
+            modifier = Modifier.size(16.dp)
         )
-
+        Text(
+            text = song.name,
+            modifier = Modifier.fillMaxWidth(),
+            style = MaterialTheme.typography.headlineMedium,
+            color = getCurrentColorScheme().onBackground
+        )
+        Text(
+            text = song.artist,
+            modifier = Modifier.fillMaxWidth(),
+            style = MaterialTheme.typography.bodyLarge,
+            color = getCurrentColorScheme().onBackground.copy(alpha = 0.7f)
+        )
 
     }
 }
@@ -57,7 +72,8 @@ fun ImageSongContent2(modifier: Modifier = Modifier, song: Song) {
             painter = painterResource(id = R.drawable.img_extra),
             contentDescription = "Image of ${song.name}",
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .height(400.dp),
             contentScale = ContentScale.Crop
         )
         Spacer(

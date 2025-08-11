@@ -9,6 +9,6 @@ data class Song(
     val name: String,
     val artist: String,
     val duration: String,
-    val image: ByteArray?,
+    val image: String?,
     val uri: String?
 )

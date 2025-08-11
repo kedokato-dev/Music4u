@@ -43,15 +43,17 @@ fun ProfileTopBar(
         ),
         expandedHeight = TopAppBarDefaults.TopAppBarExpandedHeight,
         actions = {
-            Icon(
-                painter = painterResource(id = R.drawable.edit_1),
-                contentDescription = "Settings Icon",
-                modifier = modifier
-                    .size(24.dp)
-                    .clickable {
-                        onIconClick()
-                    }
-            )
+           if(!isEdit){
+               Icon(
+                   painter = painterResource(id = R.drawable.edit_1),
+                   contentDescription = "Settings Icon",
+                   modifier = modifier
+                       .size(24.dp)
+                       .clickable {
+                           onIconClick()
+                       }
+               )
+           }
         },
         navigationIcon = {
 

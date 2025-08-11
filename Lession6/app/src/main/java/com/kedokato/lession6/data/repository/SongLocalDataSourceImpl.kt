@@ -6,11 +6,15 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
+import androidx.core.net.toUri
 import com.kedokato.lession6.domain.model.Song
 import com.kedokato.lession6.domain.repository.SongLocalDataSource
+import java.io.File
+import java.io.FileOutputStream
 
 class SongLocalDataSourceImpl(
-    private val contentResolver: ContentResolver
+    private val contentResolver: ContentResolver,
+    private val context: android.content.Context
 ) : SongLocalDataSource {
 
     override suspend fun getAllSongs(): List<Song> {
@@ -31,9 +35,7 @@ class SongLocalDataSourceImpl(
             MediaStore.Audio.Media.MIME_TYPE
         )
 
-        val sortOrder = "${MediaStore.Audio.Media.TITLE} ASC"
-
-        contentResolver.query(uri, projection, selection, null, sortOrder)?.use { cursor ->
+        contentResolver.query(uri, projection, selection, null, null)?.use { cursor ->
             val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
             val titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
             val artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
@@ -54,7 +56,7 @@ class SongLocalDataSourceImpl(
                     val duration = cursor.getLong(durationColumn)
                     val audioUri = ContentUris.withAppendedId(uri, id)
 
-                    val imageFile = extractAlbumArtAsBytes( contentResolver, audioUri)
+                    val imageUri = extractAlbumArtUri(contentResolver, audioUri)
 
                     Log.d("PlaylistRepo", "Adding song: $title - $artist - $duration")
 
@@ -64,7 +66,7 @@ class SongLocalDataSourceImpl(
                             name = title,
                             artist = artist,
                             duration = duration.toString(),
-                            image = imageFile,
+                            image = imageUri,
                             uri = audioUri.toString()
                         )
                     )
@@ -79,15 +81,24 @@ class SongLocalDataSourceImpl(
         return songs
     }
 
-    private fun extractAlbumArtAsBytes(
+    private fun extractAlbumArtUri(
         contentResolver: ContentResolver,
         audioUri: Uri
-    ): ByteArray? {
+    ): String? {
         val retriever = MediaMetadataRetriever()
         return try {
             val fd = contentResolver.openFileDescriptor(audioUri, "r")?.fileDescriptor ?: return null
             retriever.setDataSource(fd)
-            retriever.embeddedPicture
+            val pictureData = retriever.embeddedPicture ?: return null
+
+            // Lưu file ảnh vào cache
+            val coverFile = File(
+                context.cacheDir,
+                "${System.currentTimeMillis()}_cover.jpg"
+            )
+            FileOutputStream(coverFile).use { it.write(pictureData) }
+
+            coverFile.toUri().toString()
         } catch (e: Exception) {
             Log.e("PlaylistRepo", "Failed to extract embedded picture: ${e.message}")
             null
@@ -95,4 +106,5 @@ class SongLocalDataSourceImpl(
             retriever.release()
         }
     }
+
 }

@@ -22,14 +22,13 @@ class MusicServiceControllerImpl(
     private val _playerState = MutableStateFlow(PlayerState())
     override val playerState: Flow<PlayerState> = _playerState.asStateFlow()
 
-    // Thêm này để đợi service connection
     private var isServiceConnected = false
     private val pendingActions = mutableListOf<() -> Unit>()
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             android.util.Log.d("MusicServiceController", "Service connected successfully!")
-            val binder = service as MusicService.LocalBinder
+            val binder = service as MusicService.MusicBinder
             musicService = binder.getService()
             isServiceConnected = true
 
@@ -59,6 +58,9 @@ class MusicServiceControllerImpl(
     private fun bindToService() {
         android.util.Log.d("MusicServiceController", "Attempting to bind to service...")
         val intent = Intent(context, MusicService::class.java)
+
+        // START service trước khi bind để đảm bảo service tồn tại
+        context.startService(intent)
         val bindResult = context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
         android.util.Log.d("MusicServiceController", "Bind result: $bindResult")
     }
@@ -71,49 +73,49 @@ class MusicServiceControllerImpl(
             // Thêm vào pending actions để thực hiện khi service ready
             pendingActions.add {
                 android.util.Log.d("MusicServiceController", "Executing pending play for: ${song.name}")
-                musicService?.play(song)
+                musicService?.playSong(song)
             }
             return
         }
 
-        musicService?.play(song)
+        musicService?.playSong(song)
     }
 
     override suspend fun pause() {
         android.util.Log.d("MusicServiceController", "Pause called")
         if (!isServiceConnected || musicService == null) {
             android.util.Log.w("MusicServiceController", "Service not ready, adding pause to pending")
-            pendingActions.add { musicService?.pause() }
+            pendingActions.add { musicService?.pauseSong() }
             return
         }
-        musicService?.pause()
+        musicService?.pauseSong()
     }
 
     override suspend fun resume() {
         android.util.Log.d("MusicServiceController", "Resume called")
         if (!isServiceConnected || musicService == null) {
-            pendingActions.add { musicService?.resume() }
+            pendingActions.add { musicService?.resumeSong() }
             return
         }
-        musicService?.resume()
+        musicService?.resumeSong()
     }
 
     override suspend fun next() {
-        android.util.Log.d("MusicServiceController", "Next called")
-        if (!isServiceConnected || musicService == null) {
-            pendingActions.add { musicService?.next() }
-            return
-        }
-        musicService?.next()
+//        android.util.Log.d("MusicServiceController", "Next called")
+//        if (!isServiceConnected || musicService == null) {
+//            pendingActions.add { musicService?.() }
+//            return
+//        }
+//        musicService?.next()
     }
 
     override suspend fun prev() {
-        android.util.Log.d("MusicServiceController", "Previous called")
-        if (!isServiceConnected || musicService == null) {
-            pendingActions.add { musicService?.prev() }
-            return
-        }
-        musicService?.prev()
+//        android.util.Log.d("MusicServiceController", "Previous called")
+//        if (!isServiceConnected || musicService == null) {
+//            pendingActions.add { musicService?.() }
+//            return
+//        }
+//        musicService?.prev()
     }
 
     override suspend fun seekTo(position: Long) {
