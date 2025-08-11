@@ -23,6 +23,7 @@ import com.kedokato.lession6.utils.resourceIdToBitmap
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 
 class MusicService : Service() {
@@ -32,6 +33,13 @@ class MusicService : Service() {
 
     private val _playerState = MutableStateFlow(PlayerState())
     val playerState: Flow<PlayerState> = _playerState.asStateFlow()
+
+
+    private var progressUpdateJob: kotlinx.coroutines.Job? = null
+    private val serviceScope = kotlinx.coroutines.CoroutineScope(
+        kotlinx.coroutines.Dispatchers.Main + kotlinx.coroutines.SupervisorJob()
+    )
+
 
     companion object {
         const val NOTIFICATION_ID = 1
@@ -54,13 +62,19 @@ class MusicService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
+            ACTION_PLAY -> {
+
+            }
             ACTION_PAUSE -> pauseSong()
             ACTION_RESUME -> resumeSong()
             ACTION_SKIP_NEXT -> {}
             ACTION_SKIP_PREVIOUS -> {}
             ACTION_STOP -> {
-                stopSelf()
+                mediaPlayer?.stop() // Dừng nhạc trước
+                mediaPlayer?.release()
+                mediaPlayer = null
                 stopForeground(STOP_FOREGROUND_REMOVE)
+                stopSelf()
             }
         }
         return START_NOT_STICKY
@@ -83,9 +97,11 @@ class MusicService : Service() {
                     song = song,
                     isPlaying = true,
                     currentPosition = 0,
-                    duration = mp.duration.toLong()
+                    duration = mp.duration.toLong(),
+                    progress = 0f
                 )
                 startForeground(NOTIFICATION_ID, createNotification(true))
+                startProgressUpdates()
             }
         }
     }
@@ -93,19 +109,30 @@ class MusicService : Service() {
     fun pauseSong() {
         if (mediaPlayer?.isPlaying == true) {
             mediaPlayer?.pause()
+            _playerState.value = _playerState.value.copy(isPlaying = false)
             updateNotification(false)
+            stopProgressUpdates()
         }
     }
 
     fun resumeSong() {
         if (mediaPlayer?.isPlaying == false) {
             mediaPlayer?.start()
+            _playerState.value = _playerState.value.copy(isPlaying = true)
             updateNotification(true)
+            startProgressUpdates()
         }
     }
 
     fun seekTo(position: Long) {
         mediaPlayer?.seekTo(position.toInt())
+        val duration = mediaPlayer?.duration?.toLong() ?: 0L
+        val progress = if (duration > 0) position.toFloat() / duration.toFloat() else 0f
+
+        _playerState.value = _playerState.value.copy(
+            currentPosition = position,
+            progress = progress
+        )
     }
 
     fun isPlaying(): Boolean = mediaPlayer?.isPlaying ?: false
@@ -151,6 +178,8 @@ class MusicService : Service() {
                 androidx.media.app.NotificationCompat.MediaStyle()
                     .setShowActionsInCompactView(0, 1, 2)
                     .setMediaSession(null)
+                    .setShowCancelButton(true)
+                    .setCancelButtonIntent(getPendingIntent(ACTION_STOP))
             )
             .addAction(
                 R.drawable.skip_previous,
@@ -187,8 +216,34 @@ class MusicService : Service() {
         manager.notify(NOTIFICATION_ID, notification)
     }
 
+    private fun startProgressUpdates() {
+        stopProgressUpdates() // Dừng job cũ nếu có
+
+        progressUpdateJob = serviceScope.launch {
+            while (mediaPlayer?.isPlaying == true) {
+                val currentPos = mediaPlayer?.currentPosition?.toLong() ?: 0L
+                val duration = mediaPlayer?.duration?.toLong() ?: 0L
+                val progress = if (duration > 0) currentPos.toFloat() / duration.toFloat() else 0f
+
+                _playerState.value = _playerState.value.copy(
+                    currentPosition = currentPos,
+                    duration = duration,
+                    progress = progress
+                )
+
+                kotlinx.coroutines.delay(500) // Update mỗi 100ms
+            }
+        }
+    }
+
+    private fun stopProgressUpdates() {
+        progressUpdateJob?.cancel()
+        progressUpdateJob = null
+    }
+
     override fun onDestroy() {
         super.onDestroy()
+        stopProgressUpdates()
         mediaPlayer?.release()
         mediaPlayer = null
         stopForeground(STOP_FOREGROUND_REMOVE)

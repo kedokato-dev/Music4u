@@ -1,7 +1,9 @@
 package com.kedokato.lession6.navigation
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,6 +15,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -29,17 +32,22 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.example.compose.getCurrentColorScheme
+import com.kedokato.lession6.data.service.MusicServiceController
+import com.kedokato.lession6.domain.model.PlayerState
+import com.kedokato.lession6.domain.model.Song
 import com.kedokato.lession6.presentation.home.HomeScreen
 import com.kedokato.lession6.presentation.library.LibraryScreen
 import com.kedokato.lession6.presentation.player.PlayerMusicScreen
+import com.kedokato.lession6.presentation.player.component.MiniPlayerMusic
 import com.kedokato.lession6.presentation.playlist.myplaylist.MyPlaylistScreen
 import com.kedokato.lession6.presentation.playlist.playlist.MyPlaylistDetailScreen
-
+import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NestedGraph(onProfileClick: () -> Unit) {
+fun NestedGraph(onProfileClick: () -> Unit,
+                musicServiceController: MusicServiceController) {
     val backStack = rememberNavBackStack<BottomBarScreen>(BottomBarScreen.Home)
     val colorScheme = getCurrentColorScheme()
 
@@ -48,47 +56,90 @@ fun NestedGraph(onProfileClick: () -> Unit) {
     ) { mutableStateOf(BottomBarScreen.Home) }
 
     val stateHolder = rememberSaveableStateHolder()
+    val playerState by musicServiceController.playerState.collectAsState(PlayerState())
+
+    val currentScreen = backStack.lastOrNull()
+    val shouldShowMiniPlayer = playerState.song != null &&
+            currentScreen is BottomBarScreen
 
     Scaffold(
         bottomBar = {
-            NavigationBar(
-                containerColor = colorScheme.background,
-                modifier = Modifier.graphicsLayer {
-                    clip = true
-                },
-                tonalElevation = 8.dp,
+            Column(
             ) {
-                bottomBarItems.forEach { destination ->
-                    NavigationBarItem(
-                        selected = currentBottomBarScreen == destination,
-                        icon = {
-                            Icon(
-                                painter = painterResource(destination.icon),
-                                contentDescription = "$destination icon",
-                                tint = if (currentBottomBarScreen == destination) colorScheme.primary else colorScheme.onBackground
-                            )
+                if (shouldShowMiniPlayer) {
+                    MiniPlayerMusic(
+                        isPlaying = playerState.isPlaying,
+                        progress = if (playerState.duration > 0) {
+                            playerState.currentPosition.toFloat() / playerState.duration.toFloat()
+                        } else 0f,
+                        song = playerState.song,
+                        onCloseMiniPlayer = {
+                            // Có thể pause hoặc stop bài hát
                         },
-                        alwaysShowLabel = true,
-                        label = { Text(destination.title) },
-                        onClick = {
-                            if (backStack.lastOrNull() != destination) {
-                                if (backStack.lastOrNull() in bottomBarItems) {
-                                    backStack.removeAt(backStack.lastIndex)
+                        onPlayPauseMiniPlayer = {
+                            if (playerState.isPlaying) {
+                                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+                                    musicServiceController.pause()
                                 }
-                                backStack.add(destination)
-                                currentBottomBarScreen = destination
+                            } else {
+                                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+                                    musicServiceController.resume()
+                                }
                             }
                         },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = colorScheme.onBackground,
-                            selectedTextColor = colorScheme.primary,
-                            indicatorColor = Color.Transparent,
-                            unselectedIconColor = colorScheme.onBackground,
-                            unselectedTextColor = colorScheme.onBackground,
-                        ),
+                        onClickMiniPlayer = {
+                            playerState.song?.let { song ->
+                                backStack.add(RememberScreen.PlayerMusicScreen(song))
+                            }
+                        },
+                        onSeek = { progress ->
+                            val position = (progress * playerState.duration).toLong()
+                            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+                                musicServiceController.seekTo(position)
+                            }
+                        }
                     )
                 }
 
+
+                NavigationBar(
+                    containerColor = colorScheme.background,
+                    modifier = Modifier.graphicsLayer {
+                        clip = true
+                    },
+                    tonalElevation = 8.dp,
+                ) {
+                    bottomBarItems.forEach { destination ->
+                        NavigationBarItem(
+                            selected = currentBottomBarScreen == destination,
+                            icon = {
+                                Icon(
+                                    painter = painterResource(destination.icon),
+                                    contentDescription = "$destination icon",
+                                    tint = if (currentBottomBarScreen == destination) colorScheme.primary else colorScheme.onBackground
+                                )
+                            },
+                            alwaysShowLabel = true,
+                            label = { Text(destination.title) },
+                            onClick = {
+                                if (backStack.lastOrNull() != destination) {
+                                    if (backStack.lastOrNull() in bottomBarItems) {
+                                        backStack.removeAt(backStack.lastIndex)
+                                    }
+                                    backStack.add(destination)
+                                    currentBottomBarScreen = destination
+                                }
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = colorScheme.onBackground,
+                                selectedTextColor = colorScheme.primary,
+                                indicatorColor = Color.Transparent,
+                                unselectedIconColor = colorScheme.onBackground,
+                                unselectedTextColor = colorScheme.onBackground,
+                            ),
+                        )
+                    }
+                }
             }
         }
     ) { innerPadding ->
@@ -100,7 +151,6 @@ fun NestedGraph(onProfileClick: () -> Unit) {
                 onBack = { backStack.removeLastOrNull() },
                 entryDecorators = listOf(
                     rememberSavedStateNavEntryDecorator(),
-//                rememberViewModelStoreNavEntryDecorator()
                 ),
                 entryProvider = entryProvider {
                     entry<BottomBarScreen.Home> {
@@ -109,18 +159,18 @@ fun NestedGraph(onProfileClick: () -> Unit) {
                             onProfileClick = onProfileClick
                         )
                     }
+
                     entry<BottomBarScreen.Library> {
                         LibraryScreen(
                             modifier = Modifier.fillMaxSize(),
-                            onSongClick = {
-                                backStack.add(
-                                    RememberScreen.PlayerMusicScreen(it)
-                                )
+                            onSongClick = { song ->
+                                // Phát bài hát qua service thay vì navigate ngay
+                                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+                                    musicServiceController.play(song)
+                                }
                             }
-
                         )
                     }
-
 
                     entry<BottomBarScreen.Playlist> {
                         MyPlaylistScreen(

@@ -132,7 +132,8 @@ fun AppNavigation(
                 NestedGraph(
                     onProfileClick = {
                         backStack.add(RememberScreen.ProfileScreen)
-                    }
+                    },
+                    musicServiceController = koinInject()
                 )
             }
         }
