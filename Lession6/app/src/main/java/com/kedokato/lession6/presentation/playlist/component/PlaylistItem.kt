@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,7 +39,9 @@ import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.R
+import com.kedokato.lession6.domain.model.PlayerState
 import com.kedokato.lession6.domain.model.Song
+import com.kedokato.lession6.presentation.component.LottieAnimationPlayingSong
 import com.kedokato.lession6.presentation.player.PlayerMusicViewModel
 import com.kedokato.lession6.presentation.playlist.playlist.Menu
 import com.kedokato.lession6.presentation.playlist.playlist.PlaylistViewModel
@@ -55,8 +58,10 @@ fun PlayListItem(
     onDrag: (Offset) -> Unit = {},
     modifier: Modifier = Modifier,
     onNavigationPlayerMusic: () -> Unit = {},
+    playerState: PlayerState? = null,
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val isCurrentSongPlaying = playerState?.song?.id == song.id && playerState.isPlaying
 
     Row(
         modifier = modifier
@@ -69,33 +74,48 @@ fun PlayListItem(
                 }
             }
             .zIndex(if (isDragging) 1f else 0f)
-            .background(getCurrentColorScheme().background)
+            .then(
+                if (isCurrentSongPlaying){
+                    Modifier.background(getCurrentColorScheme().primary.copy(0.3f))
+                } else {
+                    Modifier.background(getCurrentColorScheme().background)
+                }
+            )
             .clickable(
                 onClick = {
                     onNavigationPlayerMusic()
                 }
             )
     ) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(song.image)
-                .memoryCachePolicy(CachePolicy.ENABLED)
-                .diskCachePolicy(CachePolicy.DISABLED)
-                .build(),
-            contentDescription = song.name,
-            contentScale = ContentScale.Crop,
-            placeholder = painterResource(id = R.drawable.img_extra),
-            error = painterResource(id = R.drawable.img4),
-            modifier = Modifier
-                .size(64.dp)
-                .padding(8.dp)
-                .clip(RoundedCornerShape(2.dp))
-        )
+        Box {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(song.image)
+                    .memoryCachePolicy(CachePolicy.ENABLED)
+                    .diskCachePolicy(CachePolicy.DISABLED)
+                    .build(),
+                contentDescription = song.name,
+                contentScale = ContentScale.Crop,
+                placeholder = painterResource(id = R.drawable.img_extra),
+                error = painterResource(id = R.drawable.img4),
+                modifier = Modifier
+                    .size(64.dp)
+                    .padding(8.dp)
+                    .clip(RoundedCornerShape(2.dp))
+            )
+
+            if (isCurrentSongPlaying) {
+                LottieAnimationPlayingSong(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .size(48.dp)
+                )
+            }
+        }
 
         Column(
             modifier = Modifier
                 .weight(1f)
-                .background(getCurrentColorScheme().background)
                 .padding(start = 4.dp, end = 8.dp)
         ) {
             Text(

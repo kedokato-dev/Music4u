@@ -196,6 +196,7 @@ fun NestedGraph(onProfileClick: () -> Unit,
                         MyPlaylistDetailScreen(
                             playlistId = entry.playListId,
                             playlistTitle = entry.playlistTittle,
+                            musicServiceController = musicServiceController,
                             onSongClick = { song ->
                                 kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
                                     musicServiceController.play(song)

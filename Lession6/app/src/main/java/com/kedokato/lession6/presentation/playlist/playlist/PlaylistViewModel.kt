@@ -32,9 +32,6 @@ class PlaylistViewModel(
     private val _state = MutableStateFlow(PlaylistState())
     val state: StateFlow<PlaylistState> = _state.asStateFlow()
 
-    private val _playerMusicState = MutableStateFlow(PlayerMusicState())
-    val playerMusicState: StateFlow<PlayerMusicState> = _playerMusicState.asStateFlow()
-
 
 
     fun processIntent(intent: PlaylistIntent) {
@@ -55,7 +52,9 @@ class PlaylistViewModel(
             }
 
             is PlaylistIntent.PlaySong -> {
-                togglePlayPause()
+               _state.value.copy(
+                   isPlaying = true,
+               )
             }
         }
     }
@@ -66,20 +65,7 @@ class PlaylistViewModel(
 
     }
 
-    private fun togglePlayPause() {
-        val currentSong = _playerMusicState.value.song ?: return
-        viewModelScope.launch {
-            if (_playerMusicState.value.isPlaying) {
-                pauseSongUseCase()
-            } else {
-                if (_playerMusicState.value.currentPosition > 0) {
-                    resumeSongUseCase()
-                } else {
-                    playSongUseCase(currentSong)
-                }
-            }
-        }
-    }
+
 
     private fun shortenTitle(title: String, maxLength: Int = 30): String {
         return if (title.length > maxLength) {
