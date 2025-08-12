@@ -33,16 +33,17 @@ fun PlayerMusicScreen(
     val playerMusicVM: PlayerMusicViewModel = koinViewModel()
     val playerMusicState = playerMusicVM.playerMusicState.collectAsState().value
 
-    LaunchedEffect(song) {
-        playerMusicVM.setSong(song)
-        playerMusicVM.playNewSong(song)
+    LaunchedEffect(song.id) {
+        if (playerMusicState.song?.id != song.id) {
+            playerMusicVM.playNewSong(song)
+        }
     }
 
 
             PlayerMusicContent(
                 modifier = Modifier,
                 onNavigationIconClick = onNavigationIconClick,
-                song = song,
+                song = playerMusicState.song ?: song,
                 viewModel = playerMusicVM,
                 states = playerMusicState
             )
@@ -99,8 +100,22 @@ fun PlayerMusicContent(
             ControlPlayer(
                 modifier = Modifier,
                 state = states ?: PlayerMusicState(),
+                onShuffleClick = {
+                    viewModel?.processIntent(PlayerMusicIntent.OnShuffleClick)
+                },
+                onPreviousClick = {
+                    viewModel?.processIntent(PlayerMusicIntent.OnPreviousClick(song.id))
+                },
+
+
                 onPlayPauseClick = {
                     viewModel?.processIntent(PlayerMusicIntent.OnPlayPauseClick)
+                },
+                onNextClick = {
+                    viewModel?.processIntent(PlayerMusicIntent.OnNextClick(song.id))
+                },
+                onRepeatClick = {
+                    viewModel?.processIntent(PlayerMusicIntent.OnRepeatClick)
                 }
             )
         }

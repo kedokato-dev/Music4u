@@ -64,7 +64,7 @@ fun PlayGridItem(song: Song,
                     contentDescription = song.name,
                     contentScale = ContentScale.Crop,
                     placeholder = painterResource(id = R.drawable.img_extra),
-                    error = painterResource(id = R.drawable.img4),
+                    error = painterResource(id = R.drawable.apple_music),
                     modifier = Modifier
                         .size(150.dp)
                         .padding(8.dp)

@@ -81,6 +81,20 @@ class MusicServiceControllerImpl(
         musicService?.playSong(song)
     }
 
+    override suspend fun playPlaylist(
+        playlist: List<Song>,
+        startIndex: Int
+    ) {
+        android.util.Log.d("MusicServiceController", "Play playlist called with start index: $startIndex")
+        if (!isServiceConnected || musicService == null) {
+            android.util.Log.w("MusicServiceController", "Service not ready, adding to pending actions")
+            pendingActions.add { musicService?.playPlaylist(playlist, startIndex) }
+            return
+        }
+        musicService?.playPlaylist(playlist, startIndex)
+        android.util.Log.d("MusicServiceController", "Play playlist action executed")
+    }
+
     override suspend fun pause() {
         android.util.Log.d("MusicServiceController", "Pause called")
         if (!isServiceConnected || musicService == null) {
@@ -100,23 +114,6 @@ class MusicServiceControllerImpl(
         musicService?.resumeSong()
     }
 
-    override suspend fun next() {
-//        android.util.Log.d("MusicServiceController", "Next called")
-//        if (!isServiceConnected || musicService == null) {
-//            pendingActions.add { musicService?.() }
-//            return
-//        }
-//        musicService?.next()
-    }
-
-    override suspend fun prev() {
-//        android.util.Log.d("MusicServiceController", "Previous called")
-//        if (!isServiceConnected || musicService == null) {
-//            pendingActions.add { musicService?.() }
-//            return
-//        }
-//        musicService?.prev()
-    }
 
     override suspend fun seekTo(position: Long) {
         android.util.Log.d("MusicServiceController", "SeekTo called: $position")
@@ -134,5 +131,51 @@ class MusicServiceControllerImpl(
             return
         }
         musicService?.stopSong()
+    }
+
+    override suspend fun skipToNextSong() {
+        android.util.Log.d("MusicServiceController", "Skip to next song called")
+        if (!isServiceConnected || musicService == null) {
+            pendingActions.add { musicService?.skipToNext() }
+            return
+        }
+        musicService?.skipToNext()
+    }
+
+    override suspend fun skipToPreviousSong() {
+        android.util.Log.d("MusicServiceController", "Skip to previous song called")
+        if (!isServiceConnected || musicService == null) {
+            pendingActions.add { musicService?.skipToPrevious() }
+            return
+        }
+        musicService?.skipToPrevious()
+    }
+
+    override suspend fun playFromPlaylist(index: Int) {
+        android.util.Log.d("MusicServiceController", "Play from playlist at index: $index")
+        if (!isServiceConnected || musicService == null) {
+            pendingActions.add { musicService?.playFromPlaylist(index) }
+            return
+        }
+        musicService?.playFromPlaylist(index)
+        android.util.Log.d("MusicServiceController", "Play from playlist action executed")
+    }
+
+    override suspend fun toggleRepeatMode() {
+        android.util.Log.d("MusicServiceController", "Toggle repeat mode called")
+        if (!isServiceConnected || musicService == null) {
+            pendingActions.add { musicService?.toggleRepeat() }
+            return
+        }
+        musicService?.toggleRepeat()
+    }
+
+    override suspend fun toggleShuffleMode() {
+        android.util.Log.d("MusicServiceController", "Toggle shuffle mode called")
+        if (!isServiceConnected || musicService == null) {
+            pendingActions.add { musicService?.toggleShuffle() }
+            return
+        }
+        musicService?.toggleShuffle()
     }
 }

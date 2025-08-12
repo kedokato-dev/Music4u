@@ -4,13 +4,13 @@ sealed class PlayerMusicIntent {
 
     data object OnPlayPauseClick : PlayerMusicIntent()
 
-    data class OnNextClick(val songId: String) : PlayerMusicIntent()
+    data class OnNextClick(val songId: Long) : PlayerMusicIntent()
 
-    data class OnPreviousClick(val songId: String) : PlayerMusicIntent()
+    data class OnPreviousClick(val songId: Long) : PlayerMusicIntent()
 
-    data class OnRepeatClick(val isRepeatMode: Boolean) : PlayerMusicIntent()
+    data object OnRepeatClick : PlayerMusicIntent()
 
-    data class OnShuffleClick(val isShuffle: Boolean) : PlayerMusicIntent()
+    data object OnShuffleClick : PlayerMusicIntent()
 
     data object OnStopSong: PlayerMusicIntent()
 

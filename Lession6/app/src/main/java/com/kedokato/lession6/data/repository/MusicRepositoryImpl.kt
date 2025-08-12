@@ -17,6 +17,13 @@ class MusicRepositoryImpl(
         musicServiceController.play(song)
     }
 
+    override suspend fun playPlaylist(
+        songs: List<Song>,
+        startIndex: Int
+    ) {
+        musicServiceController.playPlaylist(songs, startIndex)
+    }
+
     override suspend fun pauseSong() {
         musicServiceController.pause()
     }
@@ -26,15 +33,27 @@ class MusicRepositoryImpl(
     }
 
     override suspend fun nextSong() {
-        musicServiceController.next()
+        musicServiceController.skipToNextSong()
     }
 
     override suspend fun prevSong() {
-        musicServiceController.prev()
+        musicServiceController.skipToPreviousSong()
     }
 
     override suspend fun stopSong() {
         musicServiceController.stopSong()
+    }
+
+    override suspend fun playFromPlaylist(index: Int) {
+        musicServiceController.playFromPlaylist(index)
+    }
+
+    override suspend fun toggleRepeatMode() {
+        musicServiceController.toggleRepeatMode()
+    }
+
+    override suspend fun toggleShuffleMode() {
+        musicServiceController.toggleShuffleMode()
     }
 
     override suspend fun seekTo(position: Long) {

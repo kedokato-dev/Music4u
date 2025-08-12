@@ -135,6 +135,7 @@ fun PlaylistContent(
                     },
                     modifier = Modifier.animateItem(),
                     onNavigationPlayerMusic = {
+                        viewModel.processIntent(PlaylistIntent.PlaySelectSong(song.id))
                         onSongClick(song)
                     },
                     playerState = playerState

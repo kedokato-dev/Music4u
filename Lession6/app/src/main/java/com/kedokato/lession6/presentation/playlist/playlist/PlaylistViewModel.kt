@@ -51,18 +51,13 @@ class PlaylistViewModel(
                 loadSongsFromPlaylist(intent.playlistId)
             }
 
-            is PlaylistIntent.PlaySong -> {
+            is PlaylistIntent.PlaySelectSong -> {
+                playSelectedSong(intent.songId)
                _state.value.copy(
                    isPlaying = true,
                )
             }
         }
-    }
-
-
-
-    private fun loadSong(){
-
     }
 
 
@@ -102,6 +97,26 @@ class PlaylistViewModel(
                 _state.update { it.copy(isLoading = false) }
             } catch (e: Exception) {
                 Log.e("PlaylistViewModel", "Error loading songs from playlist", e)
+            }
+        }
+    }
+
+
+    private fun playSelectedSong(songId: Long) {
+        viewModelScope.launch {
+            val songs = _state.value.songs
+            val selectedIndex = songs.indexOfFirst { it.id == songId }
+
+            if (selectedIndex != -1) {
+                // Chỉ cần set playlist cho service và play bài được chọn
+                musicRepo.playPlaylist(songs, selectedIndex)
+
+                _state.update {
+                    it.copy(
+                        isPlaying = true,
+                        currentPlayingSongId = songId
+                    )
+                }
             }
         }
     }

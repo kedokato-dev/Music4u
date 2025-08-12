@@ -10,6 +10,7 @@ data class PlaylistState (
     val isPlaying: Boolean = false,
 
     val song: Song? = null,
+    val currentPlayingSongId: Long? = null,
     val isRepeatMode: Boolean = false,
     val isShuffle: Boolean = false,
     val currentSongId: String? = null,

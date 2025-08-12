@@ -6,9 +6,12 @@ import com.kedokato.lession6.domain.model.Song
 import com.kedokato.lession6.domain.repository.MusicRepo
 import com.kedokato.lession6.domain.usecase.music.NextSongUseCase
 import com.kedokato.lession6.domain.usecase.music.PauseSongUseCase
+import com.kedokato.lession6.domain.usecase.music.PlayPlaylistUseCase
 import com.kedokato.lession6.domain.usecase.music.PlaySongUseCase
 import com.kedokato.lession6.domain.usecase.music.PrevSongUseCase
+import com.kedokato.lession6.domain.usecase.music.RepeatSongUseCase
 import com.kedokato.lession6.domain.usecase.music.ResumeSongUseCase
+import com.kedokato.lession6.domain.usecase.music.ShuffleSongUseCase
 import com.kedokato.lession6.domain.usecase.music.StopSongUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +25,9 @@ class PlayerMusicViewModel(
     private val prevSongUseCase: PrevSongUseCase,
     private val resumeSongUseCase: ResumeSongUseCase,
     private val stopSongUseCase: StopSongUseCase,
+    private val repeatModeUseCase: RepeatSongUseCase,
+    private val shuffleModeUseCase: ShuffleSongUseCase,
+    private val playPlaylistUseCase: PlayPlaylistUseCase,
     private val musicRepo: MusicRepo
 ): ViewModel() {
     private val _playerMusicState = MutableStateFlow(PlayerMusicState())
@@ -37,6 +43,8 @@ class PlayerMusicViewModel(
                     duration = serviceState.duration,
                     progress = serviceState.progress,
                     song = serviceState.song,
+                    isShuffleMode = serviceState.isShuffle,
+                    isRepeatMode = serviceState.isRepeat
                 )
             }
         }
@@ -44,12 +52,12 @@ class PlayerMusicViewModel(
 
     fun processIntent(intent: PlayerMusicIntent) {
         when (intent) {
-            is PlayerMusicIntent.OnNextClick -> TODO()
+            is PlayerMusicIntent.OnNextClick -> onNext()
             is PlayerMusicIntent.OnPlayPauseClick -> togglePlayPause()
             is PlayerMusicIntent.OnSeekTo -> seekTo(intent.position)
-            is PlayerMusicIntent.OnPreviousClick -> TODO()
-            is PlayerMusicIntent.OnRepeatClick -> TODO()
-            is PlayerMusicIntent.OnShuffleClick -> TODO()
+            is PlayerMusicIntent.OnPreviousClick -> onPrev()
+            is PlayerMusicIntent.OnRepeatClick -> toggleRepeat()
+            is PlayerMusicIntent.OnShuffleClick -> toggleShuffle()
             PlayerMusicIntent.OnStopSong -> {
                 onStop()
             }
@@ -78,6 +86,18 @@ class PlayerMusicViewModel(
     private fun onPrev() {
         viewModelScope.launch {
             prevSongUseCase()
+        }
+    }
+
+    private fun toggleRepeat() {
+        viewModelScope.launch {
+            repeatModeUseCase()
+        }
+    }
+
+    private fun toggleShuffle() {
+        viewModelScope.launch {
+           shuffleModeUseCase()
         }
     }
 
@@ -124,10 +144,6 @@ class PlayerMusicViewModel(
         }
     }
 
-
-    fun setSong(song: Song) {
-        _playerMusicState.value = _playerMusicState.value.copy(song = song)
-    }
 
     fun playNewSong(song: Song) {
         viewModelScope.launch {

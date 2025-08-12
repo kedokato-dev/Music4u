@@ -34,6 +34,15 @@ class MusicService : Service() {
     private val _playerState = MutableStateFlow(PlayerState())
     val playerState: Flow<PlayerState> = _playerState.asStateFlow()
 
+    private var playlist: List<Song> = emptyList()
+    private var currentIndex: Int = -1
+    private var isShuffleEnabled = false
+    private var isRepeatEnabled = false
+
+    private var shuffledPlaylist: MutableList<Int> = mutableListOf()
+    private var shuffleIndex: Int = -1
+    private var originalPlaylist: List<Song> = emptyList()
+
 
     private var progressUpdateJob: kotlinx.coroutines.Job? = null
     private val serviceScope = kotlinx.coroutines.CoroutineScope(
@@ -65,18 +74,33 @@ class MusicService : Service() {
             ACTION_PLAY -> {
 
             }
+
             ACTION_PAUSE -> pauseSong()
             ACTION_RESUME -> resumeSong()
-            ACTION_SKIP_NEXT -> {}
-            ACTION_SKIP_PREVIOUS -> {}
-            ACTION_STOP -> {
-               stopSong()
-            }
+            ACTION_SKIP_NEXT -> skipToNext()
+            ACTION_SKIP_PREVIOUS -> skipToPrevious()
+            ACTION_STOP -> stopSong()
+
         }
         return START_NOT_STICKY
     }
 
+    fun playPlaylist(songs: List<Song>, startIndex: Int = 0) {
+        playlist = songs
+        currentIndex = startIndex
 
+        // Reset shuffle khi load playlist mới
+        shuffledPlaylist.clear()
+        shuffleIndex = -1
+
+        if (isShuffleEnabled) {
+            createShuffledPlaylist()
+        }
+
+        if (playlist.isNotEmpty() && currentIndex >= 0 && currentIndex < playlist.size) {
+            playSong(playlist[currentIndex])
+        }
+    }
 
 
     fun playSong(song: Song) {
@@ -89,17 +113,165 @@ class MusicService : Service() {
             setOnPreparedListener { mp ->
                 mp.start()
                 currentSong = song
+                updateCurrentIndex(song)
                 _playerState.value = PlayerState(
                     song = song,
                     isPlaying = true,
                     currentPosition = 0,
                     duration = mp.duration.toLong(),
-                    progress = 0f
+                    progress = 0f,
+                    isShuffle = isShuffleEnabled,
+                    isRepeat = isRepeatEnabled
                 )
                 startForeground(NOTIFICATION_ID, createNotification(true))
                 startProgressUpdates()
             }
+            setOnCompletionListener { mp ->
+                if (_playerState.value.isRepeat) {
+                    seekTo(0)
+                    mp.start()
+                } else {
+                    skipToNext()
+                }
+            }
         }
+    }
+
+
+    fun skipToNext() {
+        if (playlist.isEmpty()) return
+
+        val nextIndex = if (isShuffleEnabled) {
+            getNextShuffleIndex()
+        } else {
+            (currentIndex + 1) % playlist.size
+        }
+
+        if (nextIndex >= 0 && nextIndex < playlist.size) {
+            currentIndex = nextIndex
+            playSong(playlist[currentIndex])
+        }
+    }
+
+    fun skipToPrevious() {
+        if (playlist.isEmpty()) return
+
+        val previousIndex = if (isShuffleEnabled) {
+            getPreviousShuffleIndex()
+        } else {
+            if (currentIndex - 1 < 0) playlist.size - 1 else currentIndex - 1
+        }
+
+        if (previousIndex >= 0 && previousIndex < playlist.size) {
+            currentIndex = previousIndex
+            playSong(playlist[previousIndex])
+        }
+    }
+
+    fun playFromPlaylist(index: Int) {
+        if (index >= 0 && index < playlist.size) {
+            currentIndex = index
+
+            // Cập nhật shuffle index nếu đang bật shuffle
+            if (isShuffleEnabled && shuffledPlaylist.isNotEmpty()) {
+                shuffleIndex = shuffledPlaylist.indexOf(index).takeIf { it >= 0 } ?: 0
+            }
+
+            playSong(playlist[currentIndex])
+        }
+    }
+
+
+    fun toggleShuffle() {
+        val currentShuffle = _playerState.value.isShuffle
+        val newShuffle = !currentShuffle
+
+        _playerState.value = _playerState.value.copy(isShuffle = newShuffle)
+        isShuffleEnabled = newShuffle
+
+        if (newShuffle) {
+            createShuffledPlaylist()
+        } else {
+            // Reset về sequential mode
+            shuffledPlaylist.clear()
+            shuffleIndex = -1
+        }
+    }
+
+    private fun createShuffledPlaylist() {
+        if (playlist.isEmpty()) return
+
+        // Tạo danh sách index và shuffle
+        val indices = playlist.indices.toMutableList()
+
+        // Nếu có bài đang phát, đưa nó lên đầu
+        if (currentIndex >= 0 && currentIndex < indices.size) {
+            indices.remove(currentIndex)
+            indices.shuffle()
+            shuffledPlaylist = mutableListOf(currentIndex).apply { addAll(indices) }
+        } else {
+            indices.shuffle()
+            shuffledPlaylist = indices
+        }
+
+        shuffleIndex = 0 // Bắt đầu từ bài hiện tại
+    }
+
+    fun toggleRepeat() {
+        val currentRepeat = _playerState.value.isRepeat
+        val newRepeat = !currentRepeat
+        android.util.Log.d("MusicService", "Repeat toggled: $newRepeat")
+        _playerState.value = _playerState.value.copy(
+            isRepeat = newRepeat
+        )
+        isRepeatEnabled = newRepeat // Sync biến local
+    }
+
+    fun getCurrentPlaylist(): List<Song> = playlist
+
+    fun getCurrentIndex(): Int = currentIndex
+
+    fun getCurrentSongInPlaylist(): String? {
+        return "${getCurrentIndex() + 1} / ${getCurrentPlaylist().size}"
+    }
+
+    private fun updateCurrentIndex(song: Song) {
+        val index = playlist.indexOfFirst { it.id == song.id }
+        if (index != -1) {
+            currentIndex = index
+        }
+    }
+
+    private fun getNextShuffleIndex(): Int {
+        if (shuffledPlaylist.isEmpty()) {
+            createShuffledPlaylist()
+        }
+
+        shuffleIndex++
+
+        // Nếu hết playlist, tạo shuffle mới (trừ bài hiện tại)
+        if (shuffleIndex >= shuffledPlaylist.size) {
+            val currentSongIndex = currentIndex
+            createShuffledPlaylist()
+            // Đảm bảo bài đầu tiên của playlist mới khác bài vừa kết thúc
+            if (shuffledPlaylist.size > 1 && shuffledPlaylist[0] == currentSongIndex) {
+                shuffledPlaylist[0] = shuffledPlaylist[1].also {
+                    shuffledPlaylist[1] = shuffledPlaylist[0]
+                }
+            }
+            shuffleIndex = 0
+        }
+
+        return shuffledPlaylist.getOrElse(shuffleIndex) { currentIndex }
+    }
+
+    private fun getPreviousShuffleIndex(): Int {
+        if (shuffledPlaylist.isEmpty()) {
+            createShuffledPlaylist()
+        }
+
+        shuffleIndex = maxOf(0, shuffleIndex - 1)
+        return shuffledPlaylist.getOrElse(shuffleIndex) { currentIndex }
     }
 
     fun pauseSong() {
@@ -141,12 +313,6 @@ class MusicService : Service() {
         stopProgressUpdates()
     }
 
-    fun isPlaying(): Boolean = mediaPlayer?.isPlaying ?: false
-
-    fun getCurrentPosition(): Int = mediaPlayer?.currentPosition ?: 0
-
-    fun getDuration(): Int = mediaPlayer?.duration ?: 0
-
 
     private fun createNotification(isPlaying: Boolean): Notification {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -178,6 +344,7 @@ class MusicService : Service() {
             .setSmallIcon(R.drawable.logo_app)
             .setContentTitle(songTitle)
             .setContentText(songArtist)
+            .setSubText(getCurrentSongInPlaylist())
             .setContentIntent(pendingIntent)
             .setPriority(androidx.core.app.NotificationCompat.PRIORITY_LOW)
             .setStyle(
@@ -223,7 +390,7 @@ class MusicService : Service() {
     }
 
     private fun startProgressUpdates() {
-        stopProgressUpdates() // Dừng job cũ nếu có
+        stopProgressUpdates()
 
         progressUpdateJob = serviceScope.launch {
             while (mediaPlayer?.isPlaying == true) {

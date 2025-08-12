@@ -32,20 +32,29 @@ fun ControlPlayer(
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconControl(
-            modifier = modifier,
-            icon = R.drawable.shuffle,
-            size = 24,
-            color = getCurrentColorScheme().onBackground.hashCode(),
-            onClick = { }
-        )
+          IconControl(
+              modifier = modifier,
+              icon =R.drawable.shuffle,
+              size = 24,
+              color = if(state.isShuffleMode)
+                  getCurrentColorScheme().primary.hashCode()
+              else
+                  getCurrentColorScheme().onBackground.hashCode(),
+              onClick = {
+                  onShuffleClick()
+              }
+
+          )
+
 
         IconControl(
             modifier = modifier,
             icon = R.drawable.skip_previous,
             size = 48,
             color = getCurrentColorScheme().onBackground.hashCode(),
-            onClick = { }
+            onClick = {
+                onPreviousClick()
+            }
         )
 
         IconControl(
@@ -67,15 +76,22 @@ fun ControlPlayer(
             icon = R.drawable.skip_next,
             size = 48,
             color = getCurrentColorScheme().onBackground.hashCode(),
-            onClick = { }
+            onClick = {
+                onNextClick()
+            }
         )
 
         IconControl(
             modifier = modifier,
-            icon = R.drawable.repeat,
+            icon =  R.drawable.repeat,
             size = 24,
-            color = getCurrentColorScheme().onBackground.hashCode(),
-            onClick = { }
+            color = if(state.isRepeatMode)
+                getCurrentColorScheme().primary.hashCode()
+            else
+                getCurrentColorScheme().onBackground.hashCode(),
+            onClick = {
+                onRepeatClick()
+            }
         )
 
 
@@ -97,6 +113,7 @@ fun IconControl(modifier: Modifier = Modifier, icon: Int, size: Int, color: Int,
         )
     }
 }
+
 
 
 @Preview(showBackground = true, showSystemUi = true)

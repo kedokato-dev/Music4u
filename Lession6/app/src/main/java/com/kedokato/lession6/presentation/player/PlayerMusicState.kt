@@ -6,7 +6,7 @@ data class PlayerMusicState (
     val isLoading: Boolean = false,
     val isPlaying: Boolean = false,
     val isRepeatMode: Boolean = false,
-    val isShuffle: Boolean = false,
+    val isShuffleMode: Boolean = false,
     val currentSongId: String? = null,
     val progress: Float = 0f,
     val currentPosition: Long = 0L,

@@ -6,5 +6,7 @@ data class PlayerState(
     val currentPosition: Long = 0L,
     val duration: Long = 0L,
     val progress: Float = 0f,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val isShuffle: Boolean = false,
+    val isRepeat: Boolean = false
 )

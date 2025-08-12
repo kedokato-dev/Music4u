@@ -97,7 +97,7 @@ fun PlayListItem(
                 contentDescription = song.name,
                 contentScale = ContentScale.Crop,
                 placeholder = painterResource(id = R.drawable.img_extra),
-                error = painterResource(id = R.drawable.img4),
+                error = painterResource(id = R.drawable.apple_music),
                 modifier = Modifier
                     .size(64.dp)
                     .padding(8.dp)
