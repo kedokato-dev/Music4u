@@ -8,6 +8,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -21,11 +22,15 @@ import com.kedokato.lession6.R
 @Composable
 fun PlayerTopAppBar(
     modifier: Modifier = Modifier,
-    onNavigationIconClick: () -> Unit
+    onNavigationIconClick: () -> Unit,
+    onClosePlayer: () -> Unit = {}
 ) {
     CenterAlignedTopAppBar(
-        modifier = modifier.background(color = getCurrentColorScheme().background),
         title = { Text(stringResource(R.string.player_screen_title), style = MaterialTheme.typography.headlineMedium) },
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = getCurrentColorScheme().background,
+            titleContentColor = getCurrentColorScheme().onBackground
+        ) ,
         navigationIcon = {
             IconButton(
                 onClick = onNavigationIconClick,
@@ -40,8 +45,8 @@ fun PlayerTopAppBar(
         },
         actions = {
             IconButton(
-                onClick = onNavigationIconClick,
-                modifier = Modifier.size(32.dp)
+                onClick = onClosePlayer,
+                modifier = Modifier.size(32.dp),
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.close),
@@ -49,7 +54,8 @@ fun PlayerTopAppBar(
                     tint = getCurrentColorScheme().onBackground
                 )
             }
-        }
+        },
+        windowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0)
     )
 }
 

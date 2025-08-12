@@ -24,6 +24,7 @@ import com.kedokato.lession6.domain.usecase.music.PauseSongUseCase
 import com.kedokato.lession6.domain.usecase.music.PlaySongUseCase
 import com.kedokato.lession6.domain.usecase.music.PrevSongUseCase
 import com.kedokato.lession6.domain.usecase.music.ResumeSongUseCase
+import com.kedokato.lession6.domain.usecase.music.StopSongUseCase
 import org.koin.dsl.module
 
 val useCaseModule = module {
@@ -56,4 +57,5 @@ val useCaseModule = module {
     single { NextSongUseCase(get()) }
     single { PrevSongUseCase(get()) }
     single { ResumeSongUseCase(get()) }
+    single { StopSongUseCase(get()) }
 }

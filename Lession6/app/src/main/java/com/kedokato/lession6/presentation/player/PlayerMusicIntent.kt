@@ -12,6 +12,8 @@ sealed class PlayerMusicIntent {
 
     data class OnShuffleClick(val isShuffle: Boolean) : PlayerMusicIntent()
 
+    data object OnStopSong: PlayerMusicIntent()
+
     data class OnSeekTo(val position: Float) : PlayerMusicIntent()
 }
 

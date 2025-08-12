@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -19,6 +20,7 @@ import com.kedokato.lession6.domain.model.Song
 import com.kedokato.lession6.presentation.player.component.ControlPlayer
 import com.kedokato.lession6.presentation.player.component.ImageSongContent
 import com.kedokato.lession6.presentation.player.component.ImageSongContent2
+import com.kedokato.lession6.presentation.player.component.PlayerTopAppBar
 import com.kedokato.lession6.presentation.player.component.ProgressBarContent
 import org.koin.androidx.compose.koinViewModel
 import org.koin.androidx.compose.viewModel
@@ -36,13 +38,15 @@ fun PlayerMusicScreen(
         playerMusicVM.playNewSong(song)
     }
 
-    PlayerMusicContent(
-        modifier = modifier,
-        onNavigationIconClick = onNavigationIconClick,
-        song = song,
-        viewModel = playerMusicVM,
-        states = playerMusicState
-    )
+
+            PlayerMusicContent(
+                modifier = Modifier,
+                onNavigationIconClick = onNavigationIconClick,
+                song = song,
+                viewModel = playerMusicVM,
+                states = playerMusicState
+            )
+
 }
 
 @Composable
@@ -53,38 +57,53 @@ fun PlayerMusicContent(
     viewModel: PlayerMusicViewModel? = null,
     states: PlayerMusicState? = null,
 ) {
-    Column(
+    LazyColumn(
         modifier = modifier
             .background(getCurrentColorScheme().background)
             .fillMaxSize()
-            .padding(32.dp)
     ) {
-        Spacer(modifier = Modifier.size(8.dp))
 
-        ImageSongContent(
-            modifier = Modifier,
-            song = song
-        )
+        item {
+            PlayerTopAppBar(
+                modifier = Modifier,
+                onNavigationIconClick = onNavigationIconClick,
+                onClosePlayer = {
+                    viewModel?.processIntent(PlayerMusicIntent.OnStopSong)
+                    onNavigationIconClick()
+                }
+            )
+        }
 
-        ProgressBarContent(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            progress = states?.progress ?: 0f,
-            currentPosition = states?.currentPosition ?: 0L,
-            duration = states?.duration ?: 0L,
-            onSeekTo = { progress ->
-                viewModel?.processIntent(PlayerMusicIntent.OnSeekTo(progress))
-            }
-        )
+        item{
+            ImageSongContent(
+                modifier = Modifier.padding(horizontal = 32.dp, vertical = 8.dp),
+                song = song
+            )
+        }
 
-        ControlPlayer(
-            modifier = Modifier,
-            state = states ?: PlayerMusicState(),
-            onPlayPauseClick = {
-                viewModel?.processIntent(PlayerMusicIntent.OnPlayPauseClick)
-            }
-        )
+        item {
+            ProgressBarContent(
+                modifier = Modifier
+                    .padding(horizontal = 48.dp, vertical = 16.dp)
+                    .fillMaxWidth(),
+                progress = states?.progress ?: 0f,
+                currentPosition = states?.currentPosition ?: 0L,
+                duration = states?.duration ?: 0L,
+                onSeekTo = { progress ->
+                    viewModel?.processIntent(PlayerMusicIntent.OnSeekTo(progress))
+                }
+            )
+        }
+
+        item{
+            ControlPlayer(
+                modifier = Modifier,
+                state = states ?: PlayerMusicState(),
+                onPlayPauseClick = {
+                    viewModel?.processIntent(PlayerMusicIntent.OnPlayPauseClick)
+                }
+            )
+        }
     }
 }
 

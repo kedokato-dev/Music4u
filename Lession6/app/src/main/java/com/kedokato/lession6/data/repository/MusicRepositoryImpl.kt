@@ -33,6 +33,10 @@ class MusicRepositoryImpl(
         musicServiceController.prev()
     }
 
+    override suspend fun stopSong() {
+        musicServiceController.stopSong()
+    }
+
     override suspend fun seekTo(position: Long) {
         musicServiceController.seekTo(position)
     }

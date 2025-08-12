@@ -61,7 +61,7 @@ fun PlayListItem(
     playerState: PlayerState? = null,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val isCurrentSongPlaying = playerState?.song?.id == song.id && playerState.isPlaying
+    val isCurrentSongPlaying = playerState?.song?.id == song.id
 
     Row(
         modifier = modifier

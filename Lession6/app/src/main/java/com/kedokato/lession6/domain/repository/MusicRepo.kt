@@ -11,6 +11,7 @@ interface MusicRepo {
     suspend fun resumeSong()
     suspend fun nextSong()
     suspend fun prevSong()
+    suspend fun stopSong()
     suspend fun seekTo(position: Long)
 
 

@@ -41,7 +41,7 @@ fun PlayGridItem(song: Song,
                  onSongClick: () -> Unit = {},
                  playerState: PlayerState
 ) {
-    val isCurrentSongPlaying = playerState?.song?.id == song.id && playerState.isPlaying
+    val isCurrentSongPlaying = playerState?.song?.id == song.id
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier

@@ -9,6 +9,7 @@ import com.kedokato.lession6.domain.usecase.music.PauseSongUseCase
 import com.kedokato.lession6.domain.usecase.music.PlaySongUseCase
 import com.kedokato.lession6.domain.usecase.music.PrevSongUseCase
 import com.kedokato.lession6.domain.usecase.music.ResumeSongUseCase
+import com.kedokato.lession6.domain.usecase.music.StopSongUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,6 +21,7 @@ class PlayerMusicViewModel(
     private val nextSongUseCase: NextSongUseCase,
     private val prevSongUseCase: PrevSongUseCase,
     private val resumeSongUseCase: ResumeSongUseCase,
+    private val stopSongUseCase: StopSongUseCase,
     private val musicRepo: MusicRepo
 ): ViewModel() {
     private val _playerMusicState = MutableStateFlow(PlayerMusicState())
@@ -48,6 +50,9 @@ class PlayerMusicViewModel(
             is PlayerMusicIntent.OnPreviousClick -> TODO()
             is PlayerMusicIntent.OnRepeatClick -> TODO()
             is PlayerMusicIntent.OnShuffleClick -> TODO()
+            PlayerMusicIntent.OnStopSong -> {
+                onStop()
+            }
         }
     }
 
@@ -110,6 +115,12 @@ class PlayerMusicViewModel(
                 val position = (progress * duration).toLong()
                 musicRepo.seekTo(position)
             }
+        }
+    }
+
+    private fun onStop() {
+        viewModelScope.launch {
+            stopSongUseCase()
         }
     }
 
