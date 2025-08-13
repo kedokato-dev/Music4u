@@ -91,12 +91,16 @@ class SongLocalDataSourceImpl(
             retriever.setDataSource(fd)
             val pictureData = retriever.embeddedPicture ?: return null
 
-            // Lưu file ảnh vào cache
-            val coverFile = File(
-                context.cacheDir,
-                "${System.currentTimeMillis()}_cover.jpg"
-            )
-            FileOutputStream(coverFile).use { it.write(pictureData) }
+
+            val fileName = "${audioUri.toString().hashCode()}_cover.jpg"
+            val coverFile = File(context.cacheDir, fileName)
+
+            if (!coverFile.exists()) {
+                FileOutputStream(coverFile).use { it.write(pictureData) }
+                Log.d("PlaylistRepo", "Created new cache file: ${coverFile.name}")
+            } else {
+                Log.d("PlaylistRepo", "Using existing cache file: ${coverFile.name}")
+            }
 
             coverFile.toUri().toString()
         } catch (e: Exception) {
