@@ -1,7 +1,11 @@
 package com.kedokato.lession6.di
 
+import com.kedokato.lession6.data.remote.api.GetTopTracksAPI
 import com.kedokato.lession6.data.repository.DownloadSongFromRemoteRepoImpl
+import com.kedokato.lession6.data.repository.GetAlbumsRepoImpl
 import com.kedokato.lession6.data.repository.GetSongRepoImpl
+import com.kedokato.lession6.data.repository.GetTopArtistsRepoImpl
+import com.kedokato.lession6.data.repository.GetTracksRepoImpl
 import com.kedokato.lession6.data.repository.MusicRepositoryImpl
 import com.kedokato.lession6.data.repository.MusicServiceControllerImpl
 import com.kedokato.lession6.data.repository.PlaylistRepoImpl
@@ -10,7 +14,10 @@ import com.kedokato.lession6.data.repository.UserPreferenceRepoImpl
 import com.kedokato.lession6.data.repository.UserRepoImpl
 import com.kedokato.lession6.data.service.MusicServiceController
 import com.kedokato.lession6.domain.repository.DownloadSongFromRemoteRepo
+import com.kedokato.lession6.domain.repository.GetAlbumsRepo
 import com.kedokato.lession6.domain.repository.GetSongFromRemoteRepo
+import com.kedokato.lession6.domain.repository.GetTopArtistsRepo
+import com.kedokato.lession6.domain.repository.GetTopTracksRepo
 import com.kedokato.lession6.domain.repository.MusicRepo
 import com.kedokato.lession6.domain.repository.PlaylistRepo
 import com.kedokato.lession6.domain.repository.SongLocalDataSource
@@ -37,5 +44,17 @@ val repositoryModule = module {
 
     single<MusicServiceController> {
         MusicServiceControllerImpl(androidContext())
+    }
+
+    single<GetAlbumsRepo>{
+        GetAlbumsRepoImpl(get())
+    }
+
+    single<GetTopTracksRepo>{
+        GetTracksRepoImpl(get())
+    }
+
+    single<GetTopArtistsRepo>{
+        GetTopArtistsRepoImpl(get())
     }
 }

@@ -1,85 +1,138 @@
 package com.kedokato.lession6.presentation.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.R
+import com.kedokato.lession6.domain.model.User
+import com.kedokato.lession6.presentation.home.component.AlbumItem
+import com.kedokato.lession6.presentation.home.component.HeaderScreen
+import com.kedokato.lession6.presentation.home.component.Subtitle
+import com.kedokato.lession6.presentation.home.component.Title
+import com.kedokato.lession6.presentation.home.component.TopAlbums
+import com.kedokato.lession6.presentation.home.component.TopAlbumsContent
+import com.kedokato.lession6.presentation.home.component.TopArtistContent
+import com.kedokato.lession6.presentation.home.component.TopTracksContent
 import org.koin.androidx.compose.koinViewModel
+
 
 @Composable
 fun HomeScreen(
     modifier: Modifier,
+    onSettingsClick: () -> Unit,
     onProfileClick: () -> Unit,
 ) {
 
-    val viewModel: HomeViewModel = koinViewModel()
-    val colorScheme = getCurrentColorScheme()
+    val homeVM: HomeViewModel = koinViewModel()
 
-//    LaunchedEffect(Unit) {
-//        viewModel.loadData()
-//    }
+    val homeState = homeVM.homeState.collectAsState().value
+
+    LaunchedEffect(Unit) {
+        homeVM.processIntent(HomeIntent.LoadTopAlbums)
+        homeVM.processIntent(HomeIntent.LoadTopTracks)
+        homeVM.processIntent(HomeIntent.LoadTopArtists)
+        homeVM.processIntent(HomeIntent.LoadUserProfile)
+    }
 
 
-    Column(
-        modifier = modifier.fillMaxSize()
-            .background(color = colorScheme.background),
-    ) {
+    HomeScreenContent(
+        modifier = modifier
+            .fillMaxSize()
+            .background(getCurrentColorScheme().background),
+        onNavigationSettings = onSettingsClick,
+        oNavigationProfile = onProfileClick,
+        user = null,
+        state = homeState
+    )
 
-        ProfileTopAppBar(
-            modifier = Modifier,
-            onProfileClick = onProfileClick
-        )
-        Text(
-            text = "Home Screen",
-            modifier = modifier
-                .then(modifier),
-            color = colorScheme.onBackground,
-            style = MaterialTheme.typography.headlineLarge,
-            textAlign = TextAlign.Center
-        )
+}
+
+@Composable
+fun HomeScreenContent(
+    modifier: Modifier = Modifier,
+    onNavigationSettings: () -> Unit = {},
+    oNavigationProfile: () -> Unit = {},
+    user: User? = null,
+    state: HomeState
+) {
+    LazyColumn {
+
+        item {
+            HeaderScreen(
+                modifier = Modifier
+                    .padding(8.dp),
+                onNavigationSettings = onNavigationSettings,
+                oNavigationProfile = oNavigationProfile,
+                user = state.userProfile
+            )
+        }
+
+        item {
+            Subtitle(
+                modifier = Modifier
+            )
+        }
+
+        item {
+            Title(
+                modifier = Modifier.padding(8.dp),
+                title = stringResource(R.string.top_albums)
+            )
+        }
+
+        item {
+            TopAlbumsContent(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                homeState = state
+            )
+        }
+
+        item{
+            Title(
+                modifier = Modifier.padding(8.dp),
+                title = stringResource(R.string.top_tracks)
+            )
+        }
+
+        item {
+            TopTracksContent(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                state = state
+            )
+        }
+
+        item{
+            Title(
+                modifier = Modifier.padding(8.dp),
+                title = stringResource(R.string.top_artists)
+            )
+        }
+
+        item{
+            TopArtistContent(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                state = state
+            )
+        }
     }
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ProfileTopAppBar(modifier: Modifier,
-                    onProfileClick: () -> Unit ) {
-    val colorScheme = getCurrentColorScheme()
-    TopAppBar(
-        title = {
-            Text("")
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = colorScheme.background,
-            scrolledContainerColor = colorScheme.background,
-            titleContentColor = colorScheme.background
-        ),
-
-        actions = {
-            Icon(
-                painter = painterResource(id = R.drawable.person),
-                contentDescription = "Profile",
-                modifier = Modifier
-                    .size(24.dp)
-                    .clickable { onProfileClick() },
-                tint = colorScheme.onBackground
-            )
-        }
-    )
-}

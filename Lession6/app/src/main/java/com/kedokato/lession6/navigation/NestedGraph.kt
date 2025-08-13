@@ -168,6 +168,8 @@ fun NestedGraph(onProfileClick: () -> Unit,
                     entry<BottomBarScreen.Home> {
                         HomeScreen(
                             modifier = Modifier,
+                            onSettingsClick = {
+                            },
                             onProfileClick = onProfileClick
                         )
                     }

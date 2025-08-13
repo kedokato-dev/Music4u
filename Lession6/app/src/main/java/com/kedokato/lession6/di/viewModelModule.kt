@@ -56,7 +56,12 @@ val viewModelModule = module {
         )
     }
 
-    viewModel { HomeViewModel(get()) }
+    viewModel { HomeViewModel(get(),
+        get(),
+        get(),
+        get(),
+        get()
+    ) }
 
     viewModel{
         PlayerMusicViewModel(

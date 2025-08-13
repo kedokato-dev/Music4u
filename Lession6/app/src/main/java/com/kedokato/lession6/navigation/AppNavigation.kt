@@ -105,7 +105,10 @@ fun AppNavigation(
                     modifier = modifier,
                     onProfileClick = {
                         backStack.add(RememberScreen.ProfileScreen)
-                    }
+                    },
+                    onSettingsClick = {
+                        backStack.add(RememberScreen.NestedGraph)
+                    },
                 )
             }
 

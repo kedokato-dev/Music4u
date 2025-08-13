@@ -1,5 +1,6 @@
 package com.kedokato.lession6.di
 
+import com.kedokato.lession6.data.remote.api.GetTopArtistsAPI
 import com.kedokato.lession6.data.repository.MusicServiceControllerImpl
 import com.kedokato.lession6.domain.usecase.AddPlaylistUseCase
 import com.kedokato.lession6.domain.usecase.AddSongToPlaylistUseCase
@@ -19,6 +20,9 @@ import com.kedokato.lession6.domain.usecase.SetUserIdUseCase
 import com.kedokato.lession6.domain.usecase.UpdateUserProfileUseCase
 import com.kedokato.lession6.domain.usecase.UserAuthenticationUseCase
 import com.kedokato.lession6.domain.usecase.UserRegisterUseCase
+import com.kedokato.lession6.domain.usecase.home.GetTopAlbumsUseCase
+import com.kedokato.lession6.domain.usecase.home.GetTopArtistsUseCase
+import com.kedokato.lession6.domain.usecase.home.GetTopTracksUseCase
 import com.kedokato.lession6.domain.usecase.music.NextSongUseCase
 import com.kedokato.lession6.domain.usecase.music.PauseSongUseCase
 import com.kedokato.lession6.domain.usecase.music.PlayPlaylistUseCase
@@ -66,4 +70,11 @@ val useCaseModule = module {
     single { ShuffleSongUseCase(get()) }
     single { PlayPlaylistUseCase(get()) }
     single { PlaySongFromPlaylistUseCase(get()) }
+
+
+    // home
+    single { GetTopAlbumsUseCase(get()) }
+    single { GetTopTracksUseCase(get()) }
+    single { GetTopArtistsUseCase(get()) }
+
 }

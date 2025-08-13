@@ -37,4 +37,18 @@
     <string name="duration">Duration</string>
     <string name="current_time">Current Time</string>
 
+
+
+
+    <!--  HOME SCREEN  -->
+    <string name="home_screen_title">Home</string>
+    <string name="wellcome">Wellcome back!</string>
+    <string name="rank">Rankings</string>
+    <string name="top_tracks">Top Tracks</string>
+    <string name="top_artists">Top Artists</string>
+    <string name="top_albums">Top Albums</string>
+    <string name="see_all">See all</string>
+    <string name="full_name">Linh XG</string>
+
+
 </resources>
