@@ -37,6 +37,16 @@ sealed class RememberScreen: NavKey {
     @SerialName("PlayerMusicScreen")
     data class PlayerMusicScreen(val song: Song) : RememberScreen()
 
+    @Serializable
+    @SerialName("DetailTopAlbumsScreen")
+    data object DetailTopAlbumsScreen : RememberScreen()
+
+    @Serializable
+    @SerialName("DetailTopTracksScreen")
+    data object DetailTopTracksScreen : RememberScreen()
+
+
+
 }
 
 

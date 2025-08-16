@@ -1,5 +1,6 @@
 package com.kedokato.lession6.presentation.home.component
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,7 +16,7 @@ import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.R
 
 @Composable
-fun Title(modifier: Modifier = Modifier, title: String) {
+fun Title(modifier: Modifier = Modifier, title: String, onClick: () -> Unit = {}) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -24,7 +25,7 @@ fun Title(modifier: Modifier = Modifier, title: String) {
         Text(
             text = title,
             color = getCurrentColorScheme().onBackground,
-            style = MaterialTheme.typography.headlineLarge,
+            style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
 
@@ -32,7 +33,10 @@ fun Title(modifier: Modifier = Modifier, title: String) {
             text = stringResource(R.string.see_all),
             color = getCurrentColorScheme().primary,
             textDecoration = TextDecoration.Underline,
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleSmall,
+            modifier = modifier.clickable{
+                onClick()
+            }
         )
     }
 }

@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -32,21 +34,6 @@ import com.kedokato.lession6.presentation.home.HomeState
 
 @Composable
 fun TopTracks(modifier: Modifier = Modifier) {
-//    LazyColumn {
-//        item{
-//            Title(
-//                modifier = modifier.padding(top = 8.dp),
-//                title = "Top Tracks"
-//            )
-//        }
-//
-//        item{
-//            TopTracksContent(
-//                modifier = modifier
-//                    .background(getCurrentColorScheme().background)
-//            )
-//        }
-//    }
 
 }
 
@@ -75,7 +62,6 @@ fun TopTracksContent(modifier: Modifier = Modifier, state: HomeState) {
         }
     }
 }
-
 @Composable
 fun TrackItem(
     modifier: Modifier = Modifier,
@@ -85,60 +71,60 @@ fun TrackItem(
     listenerCount: String = "1M",
     albumName: String = "Album Name",
 ) {
-
-    Box {
+    Box(
+        modifier = modifier
+    ) {
         AsyncImage(
             model = imageUrl,
             contentDescription = "Track Image",
             placeholder = painterResource(id = R.drawable.catset_img),
             error = painterResource(id = R.drawable.apple_music),
-            modifier = modifier
-                .size(160.dp)
-                .background(color)
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f) // đảm bảo ảnh là hình vuông
+                .background(Color.Gray)
         )
 
+        // Tên track
         Text(
             text = trackName,
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = FontWeight.Bold,
             color = Color.White,
             maxLines = 1,
-            softWrap = true,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .padding(start = 8.dp, top = 8.dp)
                 .align(Alignment.TopStart)
-                .size(140.dp)
         )
 
+        // Thông tin artist + listener
         Column(
             modifier = Modifier
-                .padding(top = 8.dp, bottom = 10.dp, start = 8.dp)
+                .padding(bottom = 10.dp, start = 8.dp)
                 .align(Alignment.BottomStart),
-            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp),
-            horizontalAlignment = Alignment.Start
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             TrackInformation(
-                modifier = Modifier.padding(top = 8.dp),
                 icon = R.drawable.ear_listen,
                 title = listenerCount
             )
-
             TrackInformation(
-                modifier = Modifier.padding(top = 4.dp),
                 icon = R.drawable.user_check,
                 title = albumName
             )
         }
 
+        // Thanh màu ở dưới cùng
         LightColor(
             modifier = Modifier
-                .align(Alignment.BottomEnd),
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth(), // 🔥 luôn vừa khít chiều ngang ảnh
             color = color
         )
-
     }
 }
+
 
 @Composable
 fun TrackInformation(modifier: Modifier = Modifier, icon: Int, title: String) {
@@ -168,10 +154,9 @@ fun TrackInformation(modifier: Modifier = Modifier, icon: Int, title: String) {
 fun LightColor(modifier: Modifier = Modifier, color: Color) {
     Box(
         modifier = modifier
-            .width(160.dp)
             .height(8.dp)
             .background(color)
-    ){}
+    )
 }
 
 @Preview(showBackground = true)

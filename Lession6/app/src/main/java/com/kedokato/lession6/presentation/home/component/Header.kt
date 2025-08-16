@@ -50,50 +50,11 @@ fun HeaderScreen(modifier: Modifier = Modifier,
                 .clickable { oNavigationProfile() }
         )
 
-        Spacer(modifier.size(16.dp))
+        Spacer(modifier.size(8.dp))
 
         UserInformation(
             modifier = Modifier,
             fullName = user?.name ?: "Unknown User"
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        IconButton(
-            onClick = { onNavigationSettings() },
-            modifier = Modifier
-                .size(50.dp),
-            content = {
-                Icon(
-                    painter = painterResource(id = R.drawable.setting),
-                    contentDescription = "Profile Icon",
-                    modifier = Modifier.size(32.dp),
-                    tint = getCurrentColorScheme().onBackground,
-                )
-            }
-        )
-    }
-}
-
-@Composable
-fun HeaderScreen2(modifier: Modifier = Modifier, onNavigationSettings: () -> Unit = {}) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ){
-        Image(
-            painter = painterResource(id = R.drawable.avater_default),
-            contentDescription = "Header Image",
-            modifier = modifier
-                .size(50.dp)
-                .clip(CircleShape)
-                .border(color = getCurrentColorScheme().primary, width = 2.dp, shape = CircleShape)
-        )
-
-        Spacer(modifier.size(16.dp))
-
-        UserInformation(
-            modifier = Modifier
         )
 
         Spacer(modifier = Modifier.weight(1f))
@@ -141,7 +102,7 @@ fun UserInformation(modifier: Modifier = Modifier, fullName: String = "Kedokato"
 fun Subtitle(modifier: Modifier = Modifier) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start),
+        horizontalArrangement = Arrangement.spacedBy( space = 2.dp,Alignment.Start),
     ) {
         Image(
             painter = painterResource(id = R.drawable.king),
@@ -162,8 +123,8 @@ fun Subtitle(modifier: Modifier = Modifier) {
 }
 
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun HeaderScreen() {
-    HeaderScreen2(modifier = Modifier)
-}
+//@Preview(showBackground = true, showSystemUi = true)
+//@Composable
+//private fun HeaderScreen() {
+//    HeaderScreen(modifier = Modifier)
+//}

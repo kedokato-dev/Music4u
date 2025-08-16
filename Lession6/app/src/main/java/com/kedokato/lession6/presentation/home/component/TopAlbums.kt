@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -95,7 +96,7 @@ fun AlbumItem(modifier: Modifier = Modifier,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
+        modifier = modifier
             .background(
                 getCurrentColorScheme().surfaceTint.copy(alpha = 0.3f),
                 shape = RoundedCornerShape(8.dp)
@@ -114,7 +115,7 @@ fun AlbumItem(modifier: Modifier = Modifier,
                 .background(getCurrentColorScheme().surface, RoundedCornerShape(12.dp))
         )
 
-        Spacer(modifier = Modifier.size(8.dp))
+        Spacer(modifier = modifier.size(8.dp))
 
         Column {
             Text(
@@ -132,7 +133,59 @@ fun AlbumItem(modifier: Modifier = Modifier,
                 style = MaterialTheme.typography.bodySmall,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
-                modifier = Modifier.padding(top= 4.dp)
+                modifier = modifier.padding(top= 4.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun AlbumItemForList(
+    modifier: Modifier = Modifier,
+    titleAlbum: String,
+    artistName: String,
+    imageUrl: String? = null
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                getCurrentColorScheme().surfaceTint.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(8.dp)
+            )
+            .clip(RoundedCornerShape(8.dp))
+            .padding(8.dp)
+    ) {
+        AsyncImage(
+            model = imageUrl,
+            placeholder = painterResource(id = R.drawable.img_extra),
+            error = painterResource(id = R.drawable.img_extra),
+            contentDescription = "Album Cover",
+            modifier = Modifier
+                .size(60.dp)
+                .clip(RoundedCornerShape(8.dp))
+        )
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = titleAlbum,
+                color = getCurrentColorScheme().onBackground,
+                style = MaterialTheme.typography.bodyLarge,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = artistName,
+                color = getCurrentColorScheme().onBackground,
+                style = MaterialTheme.typography.bodySmall,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
+                modifier = Modifier.padding(top = 4.dp)
             )
         }
     }

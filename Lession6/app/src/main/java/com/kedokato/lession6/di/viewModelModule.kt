@@ -1,6 +1,8 @@
 package com.kedokato.lession6.di
 
 import com.kedokato.lession6.presentation.home.HomeViewModel
+import com.kedokato.lession6.presentation.home.top_albums.TopAlbumsViewModel
+import com.kedokato.lession6.presentation.home.top_tracks.TopTracksViewModel
 import com.kedokato.lession6.presentation.library.LibraryViewModel
 import com.kedokato.lession6.presentation.login.LoginViewModel
 import com.kedokato.lession6.presentation.player.PlayerMusicViewModel
@@ -73,6 +75,21 @@ val viewModelModule = module {
             get(),
             get(),
             get(),
+            get(),
+            get()
+        )
+    }
+
+    // Top Albums ViewModel
+    viewModel{
+        TopAlbumsViewModel(
+            get(),
+            get()
+        )
+    }
+
+    viewModel{
+        TopTracksViewModel(
             get(),
             get()
         )

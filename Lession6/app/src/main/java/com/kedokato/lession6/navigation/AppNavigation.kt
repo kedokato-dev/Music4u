@@ -109,6 +109,12 @@ fun AppNavigation(
                     onSettingsClick = {
                         backStack.add(RememberScreen.NestedGraph)
                     },
+                    onNavigationDetailTopAlbums = {
+                        backStack.add(RememberScreen.DetailTopAlbumsScreen)
+                    },
+                    onNavigationDetailTopTracks = {
+                        backStack.add(RememberScreen.DetailTopTracksScreen)
+                    }
                 )
             }
 

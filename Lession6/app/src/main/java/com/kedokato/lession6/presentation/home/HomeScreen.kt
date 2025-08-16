@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.R
 import com.kedokato.lession6.domain.model.User
+import com.kedokato.lession6.presentation.component.DisconnectInternet
+import com.kedokato.lession6.presentation.component.LottieAnimationLoading
 import com.kedokato.lession6.presentation.home.component.AlbumItem
 import com.kedokato.lession6.presentation.home.component.HeaderScreen
 import com.kedokato.lession6.presentation.home.component.Subtitle
@@ -34,6 +36,8 @@ fun HomeScreen(
     modifier: Modifier,
     onSettingsClick: () -> Unit,
     onProfileClick: () -> Unit,
+    onNavigationDetailTopAlbums: () -> Unit,
+    onNavigationDetailTopTracks: () -> Unit = {},
 ) {
 
     val homeVM: HomeViewModel = koinViewModel()
@@ -55,10 +59,19 @@ fun HomeScreen(
         onNavigationSettings = onSettingsClick,
         oNavigationProfile = onProfileClick,
         user = null,
-        state = homeState
+        state = homeState,
+        onRetry = { homeVM.processIntent(HomeIntent.RetryLoading) },
+        onNavigationDetailTopAlbums = {
+            onNavigationDetailTopAlbums()
+        },
+        onNavigationDetailTopTracks = {
+            onNavigationDetailTopTracks()
+        }
+
     )
 
 }
+
 
 @Composable
 fun HomeScreenContent(
@@ -66,72 +79,94 @@ fun HomeScreenContent(
     onNavigationSettings: () -> Unit = {},
     oNavigationProfile: () -> Unit = {},
     user: User? = null,
-    state: HomeState
+    state: HomeState,
+    onRetry: () -> Unit = {},
+    onNavigationDetailTopAlbums: () -> Unit = {},
+    onNavigationDetailTopTracks: () -> Unit = {},
 ) {
-    LazyColumn {
-
+    LazyColumn(modifier = modifier) {
         item {
             HeaderScreen(
-                modifier = Modifier
-                    .padding(8.dp),
+                modifier = Modifier.padding(8.dp),
                 onNavigationSettings = onNavigationSettings,
                 oNavigationProfile = oNavigationProfile,
                 user = state.userProfile
             )
         }
 
-        item {
-            Subtitle(
-                modifier = Modifier
-            )
-        }
+        if (state.isNetworkError) {
+            item {
+                DisconnectInternet(
+                    modifier = Modifier.fillMaxSize(),
+                    onRetry = onRetry
+                )
+            }
+        } else {
+            if (state.isLoading) {
+                item {
+                    LottieAnimationLoading(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
+                    )
+                }
+            } else {
+                item {
+                    Subtitle(
+                        modifier = Modifier.padding(8.dp),
+                    )
+                }
 
-        item {
-            Title(
-                modifier = Modifier.padding(8.dp),
-                title = stringResource(R.string.top_albums)
-            )
-        }
+                item {
+                    Title(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        title = stringResource(R.string.top_albums),
+                        onClick = onNavigationDetailTopAlbums
+                    )
+                }
 
-        item {
-            TopAlbumsContent(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                homeState = state
-            )
-        }
+                item {
+                    TopAlbumsContent(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        homeState = state
+                    )
+                }
 
-        item{
-            Title(
-                modifier = Modifier.padding(8.dp),
-                title = stringResource(R.string.top_tracks)
-            )
-        }
+                item {
+                    Title(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        title = stringResource(R.string.top_tracks),
+                        onClick = onNavigationDetailTopTracks
+                    )
+                }
 
-        item {
-            TopTracksContent(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                state = state
-            )
-        }
+                item {
+                    TopTracksContent(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        state = state
+                    )
+                }
 
-        item{
-            Title(
-                modifier = Modifier.padding(8.dp),
-                title = stringResource(R.string.top_artists)
-            )
-        }
+                item {
+                    Title(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        title = stringResource(R.string.top_artists)
+                    )
+                }
 
-        item{
-            TopArtistContent(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                state = state
-            )
+                item {
+                    TopArtistContent(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        state = state
+                    )
+                }
+            }
         }
     }
 }

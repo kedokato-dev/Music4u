@@ -21,20 +21,7 @@ import com.kedokato.lession6.presentation.home.HomeState
 
 @Composable
 fun TopArtist(modifier: Modifier = Modifier) {
-//    LazyColumn {
-//        item {
-//            Title(
-//                modifier = modifier.padding(8.dp),
-//                title = "Top Artists"
-//            )
-//        }
-//
-//        item {
-//            TopArtistContent(
-//                modifier = modifier
-//            )
-//        }
-//    }
+
 }
 
 @Composable
@@ -60,12 +47,6 @@ fun ArtistItem(modifier: Modifier = Modifier,
 )
 {
     Box{
-//        Image(
-//            painter = painterResource(id = R.drawable.catset_img),
-//            contentDescription = "Artist Image",
-//            modifier = modifier.size(180.dp)
-//        )
-
         AsyncImage(
             model = artistImageUrl,
             contentDescription = "Artist Image",

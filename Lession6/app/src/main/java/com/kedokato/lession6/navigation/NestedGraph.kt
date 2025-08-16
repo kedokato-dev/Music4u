@@ -1,12 +1,10 @@
 package com.kedokato.lession6.navigation
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -34,8 +32,9 @@ import androidx.navigation3.ui.NavDisplay
 import com.example.compose.getCurrentColorScheme
 import com.kedokato.lession6.data.service.MusicServiceController
 import com.kedokato.lession6.domain.model.PlayerState
-import com.kedokato.lession6.domain.model.Song
 import com.kedokato.lession6.presentation.home.HomeScreen
+import com.kedokato.lession6.presentation.home.top_albums.TopAlbumsDetailScreen
+import com.kedokato.lession6.presentation.home.top_tracks.TopTracksDetailScreen
 import com.kedokato.lession6.presentation.library.LibraryScreen
 import com.kedokato.lession6.presentation.player.PlayerMusicScreen
 import com.kedokato.lession6.presentation.player.component.MiniPlayerMusic
@@ -170,7 +169,13 @@ fun NestedGraph(onProfileClick: () -> Unit,
                             modifier = Modifier,
                             onSettingsClick = {
                             },
-                            onProfileClick = onProfileClick
+                            onProfileClick = onProfileClick,
+                            onNavigationDetailTopAlbums = {
+                                backStack.add(RememberScreen.DetailTopAlbumsScreen)
+                            },
+                            onNavigationDetailTopTracks = {
+                                backStack.add(RememberScreen.DetailTopTracksScreen)
+                            },
                         )
                     }
 
@@ -210,6 +215,24 @@ fun NestedGraph(onProfileClick: () -> Unit,
                     entry<RememberScreen.PlayerMusicScreen> { entry ->
                         PlayerMusicScreen(
                             song = entry.song,
+                            onNavigationIconClick = {
+                                backStack.removeLastOrNull()
+                            }
+                        )
+                    }
+
+                    entry<RememberScreen.DetailTopAlbumsScreen>{
+                        TopAlbumsDetailScreen(
+                            modifier = Modifier.fillMaxSize(),
+                            onBackClick = {
+                                backStack.removeLastOrNull()
+                            }
+                        )
+                    }
+
+                    entry<RememberScreen.DetailTopTracksScreen>{
+                        TopTracksDetailScreen(
+                            modifier = Modifier.fillMaxSize(),
                             onNavigationIconClick = {
                                 backStack.removeLastOrNull()
                             }

@@ -5,6 +5,8 @@ sealed class HomeIntent {
     object LoadTopTracks : HomeIntent()
     object LoadTopArtists : HomeIntent()
     object LoadUserProfile : HomeIntent()
+    object RetryLoading : HomeIntent()
+
 }
 
 
