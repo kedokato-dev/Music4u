@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.kedokato.lession6"
+    namespace = "com.kedokato.music4u"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.kedokato.lession6"
+        applicationId = "com.kedokato.music4u"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -89,6 +89,8 @@ dependencies {
 
 
     implementation(libs.androidx.media)
+
+    implementation(libs.material3)
 
 
 
